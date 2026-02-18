@@ -1,0 +1,971 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Game Backend Dashboard</title>
+<style>
+  :root {
+    --bg: #0d1117;
+    --surface: #161b22;
+    --surface2: #21262d;
+    --border: #30363d;
+    --accent: #7c3aed;
+    --accent2: #a855f7;
+    --green: #238636;
+    --green2: #2ea043;
+    --red: #da3633;
+    --yellow: #d29922;
+    --text: #e6edf3;
+    --muted: #8b949e;
+    --radius: 8px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); color: var(--text); font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; min-height: 100vh; }
+
+  /* ── HEADER ── */
+  header {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 16px 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+  .logo { display: flex; align-items: center; gap: 10px; font-size: 20px; font-weight: 700; }
+  .logo-icon { font-size: 28px; }
+  .header-actions { display: flex; gap: 10px; align-items: center; }
+
+  /* ── MAIN ── */
+  .container { max-width: 1200px; margin: 0 auto; padding: 24px; }
+
+  /* ── STAT CARDS ── */
+  .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 16px; margin-bottom: 28px; }
+  .stat-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 20px;
+    text-align: center;
+  }
+  .stat-value { font-size: 32px; font-weight: 700; color: var(--accent2); }
+  .stat-label { color: var(--muted); font-size: 13px; margin-top: 4px; }
+
+  /* ── TABS ── */
+  .tabs { display: flex; gap: 4px; margin-bottom: 20px; border-bottom: 1px solid var(--border); padding-bottom: 0; }
+  .tab {
+    padding: 10px 18px;
+    cursor: pointer;
+    border-radius: 6px 6px 0 0;
+    font-size: 14px;
+    color: var(--muted);
+    border: 1px solid transparent;
+    border-bottom: none;
+    transition: all 0.15s;
+    background: none;
+  }
+  .tab:hover { color: var(--text); background: var(--surface2); }
+  .tab.active { color: var(--text); background: var(--surface); border-color: var(--border); border-bottom: 1px solid var(--surface); margin-bottom: -1px; }
+
+  /* ── PANELS ── */
+  .panel { display: none; }
+  .panel.active { display: block; }
+
+  /* ── CARDS ── */
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 20px;
+    margin-bottom: 16px;
+  }
+  .card h3 { margin-bottom: 14px; font-size: 15px; color: var(--accent2); }
+
+  /* ── TABLE ── */
+  .table-wrap { overflow-x: auto; border-radius: var(--radius); border: 1px solid var(--border); }
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  th { background: var(--surface2); padding: 10px 14px; text-align: left; color: var(--muted); font-weight: 600; font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px; }
+  td { padding: 10px 14px; border-top: 1px solid var(--border); vertical-align: middle; }
+  tr:hover td { background: var(--surface2); }
+  .badge {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 600;
+  }
+  .badge-red { background: rgba(218,54,51,0.2); color: #ff6b6b; }
+  .badge-green { background: rgba(35,134,54,0.2); color: #56d364; }
+  .badge-purple { background: rgba(124,58,237,0.2); color: #c084fc; }
+  .badge-yellow { background: rgba(210,153,34,0.2); color: #e3b341; }
+  .badge-blue { background: rgba(56,139,253,0.2); color: #58a6ff; }
+  .badge-gray { background: rgba(139,148,158,0.15); color: var(--muted); }
+
+  /* ── BUTTONS ── */
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 7px 14px;
+    border-radius: 6px;
+    border: 1px solid transparent;
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 500;
+    transition: all 0.15s;
+    text-decoration: none;
+  }
+  .btn-primary { background: var(--accent); color: #fff; border-color: var(--accent); }
+  .btn-primary:hover { background: var(--accent2); }
+  .btn-green { background: var(--green); color: #fff; border-color: var(--green); }
+  .btn-green:hover { background: var(--green2); }
+  .btn-red { background: var(--red); color: #fff; border-color: var(--red); }
+  .btn-red:hover { background: #f85149; }
+  .btn-outline { background: transparent; color: var(--text); border-color: var(--border); }
+  .btn-outline:hover { background: var(--surface2); }
+  .btn-sm { padding: 4px 10px; font-size: 12px; }
+  .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+  /* ── FORMS ── */
+  .form-row { display: flex; gap: 10px; flex-wrap: wrap; align-items: flex-end; margin-bottom: 12px; }
+  .form-group { display: flex; flex-direction: column; gap: 5px; }
+  .form-group label { font-size: 12px; color: var(--muted); font-weight: 500; }
+  input, select, textarea {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    color: var(--text);
+    padding: 7px 10px;
+    border-radius: 6px;
+    font-size: 13px;
+    outline: none;
+    transition: border-color 0.15s;
+  }
+  input:focus, select:focus, textarea:focus { border-color: var(--accent); }
+  input[type="number"] { width: 90px; }
+  select { min-width: 140px; }
+
+  /* ── OWNER GATE ── */
+  #owner-gate {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.85);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    backdrop-filter: blur(4px);
+  }
+  .gate-box {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 36px;
+    width: 360px;
+    text-align: center;
+  }
+  .gate-box h2 { margin-bottom: 8px; }
+  .gate-box p { color: var(--muted); font-size: 14px; margin-bottom: 24px; }
+  .gate-box input { width: 100%; margin-bottom: 12px; padding: 10px; }
+  .gate-error { color: #ff6b6b; font-size: 13px; margin-top: 8px; display: none; }
+
+  /* ── PUBLIC VIEW ── */
+  #public-view {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    text-align: center;
+    gap: 16px;
+    padding: 24px;
+  }
+  .hero-title { font-size: 48px; font-weight: 800; background: linear-gradient(135deg, var(--accent2), #c084fc); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+  .hero-sub { color: var(--muted); font-size: 18px; max-width: 500px; }
+
+  /* ── API DOCS ── */
+  .api-endpoint {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 14px 16px;
+    margin-bottom: 10px;
+    font-family: monospace;
+    font-size: 13px;
+  }
+  .method { font-weight: 700; margin-right: 10px; }
+  .method.GET { color: #58a6ff; }
+  .method.POST { color: #56d364; }
+  .method.DELETE { color: #ff6b6b; }
+  .endpoint-desc { color: var(--muted); font-size: 12px; margin-top: 4px; }
+
+  /* ── TOAST ── */
+  #toast {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 12px 18px;
+    font-size: 14px;
+    z-index: 9999;
+    display: none;
+    max-width: 300px;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+  }
+  #toast.success { border-color: var(--green2); color: #56d364; }
+  #toast.error { border-color: var(--red); color: #ff6b6b; }
+
+  /* ── MODAL ── */
+  .modal-overlay {
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,0.6);
+    display: flex; align-items: center; justify-content: center;
+    z-index: 500; display: none;
+  }
+  .modal-overlay.open { display: flex; }
+  .modal {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 24px;
+    width: 440px;
+    max-width: 95vw;
+  }
+  .modal h3 { margin-bottom: 16px; }
+  .modal .form-group { margin-bottom: 12px; }
+  .modal input, .modal select { width: 100%; }
+  .modal-actions { display: flex; gap: 10px; justify-content: flex-end; margin-top: 18px; }
+
+  .search-bar { position: relative; }
+  .search-bar input { width: 240px; padding-left: 32px; }
+  .search-bar::before { content: '🔍'; position: absolute; left: 8px; top: 50%; transform: translateY(-50%); font-size: 12px; }
+
+  @media (max-width: 600px) {
+    header { padding: 12px; }
+    .container { padding: 12px; }
+    .tabs { overflow-x: auto; }
+  }
+</style>
+</head>
+<body>
+
+<!-- PUBLIC VIEW (shown to everyone) -->
+<div id="public-view">
+  <div class="logo-icon" style="font-size:64px">🎮</div>
+  <div class="hero-title">Game Backend</div>
+  <p class="hero-sub">A powerful, free PlayFab-style backend for all your games. One API for credits, cosmetics, inventory, and more.</p>
+  <div style="display:flex;gap:12px;flex-wrap:wrap;justify-content:center">
+    <button class="btn btn-primary" onclick="openDocs()">📖 View API Docs</button>
+    <button class="btn btn-outline" id="owner-btn" onclick="openOwnerDashboard()">👑 Owner Dashboard</button>
+  </div>
+  <div style="color:var(--muted);font-size:13px;margin-top:16px">
+    Backend URL: <code style="background:var(--surface2);padding:3px 8px;border-radius:4px" id="base-url"></code>
+  </div>
+</div>
+
+<!-- OWNER GATE -->
+<div id="owner-gate" style="display:none">
+  <div class="gate-box">
+    <div style="font-size:48px;margin-bottom:12px">🔐</div>
+    <h2>Owner Access</h2>
+    <p>Enter your owner password to access the dashboard.</p>
+    <input type="password" id="gate-password" placeholder="Owner password..." onkeydown="if(event.key==='Enter')verifyOwner()">
+    <button class="btn btn-primary" style="width:100%" onclick="verifyOwner()">Unlock Dashboard</button>
+    <div class="gate-error" id="gate-error">❌ Wrong password</div>
+    <button class="btn btn-outline" style="width:100%;margin-top:10px" onclick="closeGate()">Cancel</button>
+  </div>
+</div>
+
+<!-- DASHBOARD (hidden until authenticated) -->
+<div id="dashboard" style="display:none">
+  <header>
+    <div class="logo">
+      <span class="logo-icon">🎮</span>
+      <span>Game Backend</span>
+      <span style="font-size:12px;color:var(--muted);font-weight:400;margin-left:4px">Owner Dashboard</span>
+    </div>
+    <div class="header-actions">
+      <span id="header-url" style="font-size:12px;color:var(--muted)"></span>
+      <button class="btn btn-outline btn-sm" onclick="goHome()">🏠 Home</button>
+      <button class="btn btn-red btn-sm" onclick="logout()">🚪 Logout</button>
+    </div>
+  </header>
+
+  <div class="container">
+    <!-- Stats -->
+    <div class="stats-grid" id="stats-grid">
+      <div class="stat-card"><div class="stat-value" id="stat-players">—</div><div class="stat-label">Total Players</div></div>
+      <div class="stat-card"><div class="stat-value" id="stat-games">—</div><div class="stat-label">Games</div></div>
+      <div class="stat-card"><div class="stat-value" id="stat-credits">—</div><div class="stat-label">Credits in Circulation</div></div>
+      <div class="stat-card"><div class="stat-value" id="stat-banned">—</div><div class="stat-label">Banned Players</div></div>
+      <div class="stat-card"><div class="stat-value" id="stat-cosmetics">—</div><div class="stat-label">Cosmetics</div></div>
+    </div>
+
+    <!-- Tabs -->
+    <div class="tabs">
+      <button class="tab active" onclick="switchTab('players')">👥 Players</button>
+      <button class="tab" onclick="switchTab('cosmetics')">✨ Cosmetics</button>
+      <button class="tab" onclick="switchTab('broadcasts')">📢 Broadcasts</button>
+      <button class="tab" onclick="switchTab('api')">📖 API Docs</button>
+    </div>
+
+    <!-- PLAYERS PANEL -->
+    <div class="panel active" id="panel-players">
+      <div class="card">
+        <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;justify-content:space-between;margin-bottom:14px">
+          <h3 style="margin:0">All Players</h3>
+          <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+            <select id="filter-game" onchange="loadPlayers()"><option value="">All Games</option></select>
+            <div class="search-bar"><input type="text" id="search-players" placeholder="Search username..." oninput="filterPlayers()"></div>
+            <button class="btn btn-outline btn-sm" onclick="loadPlayers()">🔄 Refresh</button>
+          </div>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Username</th>
+                <th>Game</th>
+                <th>Credits</th>
+                <th>Status</th>
+                <th>Joined</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="players-tbody">
+              <tr><td colspan="6" style="text-align:center;color:var(--muted)">Loading...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Quick Actions -->
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:16px">
+        <div class="card">
+          <h3>💰 Give Credits</h3>
+          <div class="form-group" style="margin-bottom:10px"><label>Player ID</label><input type="text" id="give-credits-player" placeholder="Player ID..."></div>
+          <div class="form-row">
+            <div class="form-group"><label>Amount</label><input type="number" id="give-credits-amount" value="100" min="1"></div>
+            <button class="btn btn-green" onclick="giveCredits()">Give Credits</button>
+          </div>
+        </div>
+
+        <div class="card">
+          <h3>🎒 Give Item</h3>
+          <div class="form-group" style="margin-bottom:10px"><label>Player ID</label><input type="text" id="give-item-player" placeholder="Player ID..."></div>
+          <div class="form-row">
+            <div class="form-group"><label>Item Name</label><input type="text" id="give-item-name" placeholder="sword_of_power..."></div>
+            <div class="form-group"><label>Qty</label><input type="number" id="give-item-qty" value="1" min="1"></div>
+            <button class="btn btn-green" onclick="giveItem()">Give</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- COSMETICS PANEL -->
+    <div class="panel" id="panel-cosmetics">
+      <div class="card">
+        <div style="display:flex;gap:10px;align-items:center;justify-content:space-between;margin-bottom:14px">
+          <h3 style="margin:0">Cosmetics Catalog</h3>
+          <div style="display:flex;gap:8px">
+            <select id="filter-cosmetic-game" onchange="loadCosmetics()"><option value="">All Games</option></select>
+            <button class="btn btn-primary btn-sm" onclick="openCosmeticModal()">+ Create Cosmetic</button>
+          </div>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr><th>Name</th><th>Game</th><th>Type</th><th>Rarity</th><th>Price</th><th>Actions</th></tr>
+            </thead>
+            <tbody id="cosmetics-tbody">
+              <tr><td colspan="6" style="text-align:center;color:var(--muted)">Loading...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>🎁 Grant Cosmetic to Player</h3>
+        <div class="form-row">
+          <div class="form-group"><label>Player ID</label><input type="text" id="grant-cosm-player" placeholder="Player ID..."></div>
+          <div class="form-group"><label>Cosmetic ID</label><input type="text" id="grant-cosm-id" placeholder="Cosmetic ID..."></div>
+          <button class="btn btn-green" onclick="grantCosmetic()">Grant Free</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- BROADCASTS PANEL -->
+    <div class="panel" id="panel-broadcasts">
+      <div class="card">
+        <h3>📢 Send Broadcast Message</h3>
+        <p style="color:var(--muted);font-size:13px;margin-bottom:14px">Broadcast messages can be fetched by your games using <code>GET /broadcasts?game_id=xxx</code> and shown as announcements.</p>
+        <div class="form-row">
+          <div class="form-group" style="flex:1"><label>Message</label><input type="text" id="broadcast-msg" placeholder="Server maintenance at 5pm..."></div>
+          <div class="form-group"><label>Game (optional)</label><input type="text" id="broadcast-game" placeholder="all games if empty"></div>
+          <button class="btn btn-primary" onclick="sendBroadcast()">📡 Send</button>
+        </div>
+      </div>
+      <div class="card">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
+          <h3 style="margin:0">Active Broadcasts</h3>
+          <button class="btn btn-outline btn-sm" onclick="loadBroadcasts()">🔄 Refresh</button>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Message</th><th>Game</th><th>Sent</th><th></th></tr></thead>
+            <tbody id="broadcasts-tbody"><tr><td colspan="4" style="text-align:center;color:var(--muted)">Loading...</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- API DOCS PANEL -->
+    <div class="panel" id="panel-api">
+      <div class="card">
+        <h3>🔗 Base URL</h3>
+        <div style="background:var(--bg);padding:12px 16px;border-radius:6px;font-family:monospace;font-size:14px" id="api-base-url"></div>
+        <p style="color:var(--muted);font-size:13px;margin-top:10px">Add <code>x-player-token: TOKEN</code> header to authenticated requests. Add <code>x-owner-key: PASSWORD</code> for owner routes.</p>
+      </div>
+
+      <div id="api-sections"></div>
+    </div>
+  </div>
+</div>
+
+<!-- DOCS PAGE (public) -->
+<div id="docs-view" style="display:none">
+  <header>
+    <div class="logo"><span class="logo-icon">📖</span><span>API Documentation</span></div>
+    <button class="btn btn-outline btn-sm" onclick="goHome()">← Back</button>
+  </header>
+  <div class="container" id="public-docs-content"></div>
+</div>
+
+<!-- CREATE COSMETIC MODAL -->
+<div class="modal-overlay" id="cosmetic-modal">
+  <div class="modal">
+    <h3>✨ Create Cosmetic</h3>
+    <div class="form-group"><label>Game ID *</label><input type="text" id="cosm-game-id" placeholder="my_platformer"></div>
+    <div class="form-group"><label>Name *</label><input type="text" id="cosm-name" placeholder="Golden Sword Skin"></div>
+    <div class="form-group"><label>Type *</label><input type="text" id="cosm-type" placeholder="skin / hat / trail / emote ..."></div>
+    <div class="form-group"><label>Description</label><input type="text" id="cosm-desc" placeholder="A shiny golden sword..."></div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+      <div class="form-group"><label>Price (credits)</label><input type="number" id="cosm-price" value="100" min="0"></div>
+      <div class="form-group"><label>Rarity</label>
+        <select id="cosm-rarity">
+          <option>common</option><option>uncommon</option><option>rare</option><option>epic</option><option>legendary</option>
+        </select>
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-outline" onclick="closeCosmeticModal()">Cancel</button>
+      <button class="btn btn-primary" onclick="createCosmetic()">Create</button>
+    </div>
+  </div>
+</div>
+
+<!-- PLAYER DETAIL MODAL -->
+<div class="modal-overlay" id="player-modal">
+  <div class="modal" style="width:520px">
+    <h3>👤 Player Details</h3>
+    <div id="player-detail-content"></div>
+    <div class="modal-actions">
+      <button class="btn btn-outline" onclick="closePlayerModal()">Close</button>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div id="toast"></div>
+
+<script>
+const BASE = window.location.origin;
+let OWNER_KEY = null;
+let allPlayers = [];
+let allGames = [];
+
+// ── Init ──────────────────────────────────────────────────────────────────────
+document.getElementById('base-url').textContent = BASE;
+
+function goHome() {
+  document.getElementById('public-view').style.display = 'flex';
+  document.getElementById('dashboard').style.display = 'none';
+  document.getElementById('docs-view').style.display = 'none';
+}
+
+function openDocs() {
+  document.getElementById('public-view').style.display = 'none';
+  document.getElementById('docs-view').style.display = 'block';
+  renderPublicDocs();
+}
+
+// ── Owner Gate ────────────────────────────────────────────────────────────────
+function openOwnerDashboard() {
+  const saved = localStorage.getItem('owner_key');
+  if (saved) {
+    OWNER_KEY = saved;
+    showDashboard();
+  } else {
+    document.getElementById('owner-gate').style.display = 'flex';
+    setTimeout(() => document.getElementById('gate-password').focus(), 50);
+  }
+}
+
+function closeGate() {
+  document.getElementById('owner-gate').style.display = 'none';
+  document.getElementById('gate-password').value = '';
+  document.getElementById('gate-error').style.display = 'none';
+}
+
+async function verifyOwner() {
+  const pw = document.getElementById('gate-password').value;
+  try {
+    const r = await fetch(`${BASE}/owner/verify`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ password: pw })
+    });
+    if (r.ok) {
+      OWNER_KEY = pw;
+      localStorage.setItem('owner_key', pw);
+      closeGate();
+      showDashboard();
+    } else {
+      document.getElementById('gate-error').style.display = 'block';
+    }
+  } catch {
+    document.getElementById('gate-error').textContent = '❌ Connection error';
+    document.getElementById('gate-error').style.display = 'block';
+  }
+}
+
+function logout() {
+  localStorage.removeItem('owner_key');
+  OWNER_KEY = null;
+  goHome();
+}
+
+async function showDashboard() {
+  document.getElementById('public-view').style.display = 'none';
+  document.getElementById('dashboard').style.display = 'block';
+  document.getElementById('header-url').textContent = BASE;
+  document.getElementById('api-base-url').textContent = BASE;
+  await loadStats();
+  await loadGames();
+  await loadPlayers();
+  await loadCosmetics();
+  await loadBroadcasts();
+  renderApiDocs();
+}
+
+// ── Stats ─────────────────────────────────────────────────────────────────────
+async function loadStats() {
+  const r = await ownerFetch('/owner/stats');
+  if (!r.success) return;
+  const s = r.stats;
+  document.getElementById('stat-players').textContent = s.total_players;
+  document.getElementById('stat-games').textContent = s.total_games;
+  document.getElementById('stat-credits').textContent = s.total_credits.toLocaleString();
+  document.getElementById('stat-banned').textContent = s.banned_players;
+  document.getElementById('stat-cosmetics').textContent = s.total_cosmetics;
+}
+
+// ── Games ─────────────────────────────────────────────────────────────────────
+async function loadGames() {
+  const r = await ownerFetch('/owner/games');
+  if (!r.success) return;
+  allGames = r.games;
+  const selectors = ['filter-game', 'filter-cosmetic-game'];
+  selectors.forEach(id => {
+    const sel = document.getElementById(id);
+    const cur = sel.value;
+    sel.innerHTML = '<option value="">All Games</option>';
+    r.games.forEach(g => {
+      const o = document.createElement('option');
+      o.value = g.game_id;
+      o.textContent = `${g.game_id} (${g.player_count})`;
+      sel.appendChild(o);
+    });
+    sel.value = cur;
+  });
+}
+
+// ── Players ───────────────────────────────────────────────────────────────────
+async function loadPlayers() {
+  const gameId = document.getElementById('filter-game').value;
+  const url = gameId ? `/owner/players?game_id=${encodeURIComponent(gameId)}` : '/owner/players';
+  const r = await ownerFetch(url);
+  if (!r.success) return;
+  allPlayers = r.players;
+  renderPlayers(allPlayers);
+}
+
+function filterPlayers() {
+  const q = document.getElementById('search-players').value.toLowerCase();
+  renderPlayers(allPlayers.filter(p => p.username.toLowerCase().includes(q)));
+}
+
+function renderPlayers(players) {
+  const tbody = document.getElementById('players-tbody');
+  if (!players.length) {
+    tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:var(--muted)">No players found</td></tr>';
+    return;
+  }
+  tbody.innerHTML = players.map(p => `
+    <tr>
+      <td>
+        <strong>${esc(p.username)}</strong>
+        <div style="font-size:11px;color:var(--muted)">${p.id}</div>
+      </td>
+      <td><span class="badge badge-purple">${esc(p.game_id)}</span></td>
+      <td><strong>💰 ${p.credits.toLocaleString()}</strong></td>
+      <td>${p.banned ? '<span class="badge badge-red">Banned</span>' : '<span class="badge badge-green">Active</span>'}</td>
+      <td style="color:var(--muted);font-size:12px">${new Date(p.created_at).toLocaleDateString()}</td>
+      <td>
+        <div style="display:flex;gap:6px;flex-wrap:wrap">
+          <button class="btn btn-outline btn-sm" onclick="viewPlayer('${p.id}')">👁 View</button>
+          <button class="btn btn-sm ${p.banned ? 'btn-green' : 'btn-outline'}" onclick="toggleBan('${p.id}', ${p.banned})">
+            ${p.banned ? '✅ Unban' : '🚫 Ban'}
+          </button>
+          <button class="btn btn-red btn-sm" onclick="deletePlayer('${p.id}', '${esc(p.username)}')">🗑</button>
+        </div>
+      </td>
+    </tr>
+  `).join('');
+}
+
+async function toggleBan(id, currentlyBanned) {
+  const r = await ownerPost('/owner/ban', { player_id: id, banned: !currentlyBanned });
+  if (r.success) { toast(currentlyBanned ? '✅ Player unbanned' : '🚫 Player banned', 'success'); await loadPlayers(); }
+}
+
+async function deletePlayer(id, name) {
+  if (!confirm(`Delete player "${name}"? This cannot be undone.`)) return;
+  const r = await ownerDelete(`/owner/player/${id}`);
+  if (r.success) { toast('🗑 Player deleted', 'success'); await loadPlayers(); await loadStats(); }
+}
+
+async function viewPlayer(id) {
+  const player = allPlayers.find(p => p.id === id);
+  if (!player) return;
+  document.getElementById('player-detail-content').innerHTML = `
+    <div style="display:grid;gap:10px">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+        <div class="card" style="margin:0"><div style="color:var(--muted);font-size:12px">Username</div><strong>${esc(player.username)}</strong></div>
+        <div class="card" style="margin:0"><div style="color:var(--muted);font-size:12px">Game</div><strong>${esc(player.game_id)}</strong></div>
+        <div class="card" style="margin:0"><div style="color:var(--muted);font-size:12px">Credits</div><strong>💰 ${player.credits.toLocaleString()}</strong></div>
+        <div class="card" style="margin:0"><div style="color:var(--muted);font-size:12px">Status</div>${player.banned ? '<span class="badge badge-red">Banned</span>' : '<span class="badge badge-green">Active</span>'}</div>
+      </div>
+      <div style="background:var(--bg);padding:10px;border-radius:6px;font-size:12px;color:var(--muted)">
+        ID: ${player.id}<br>Joined: ${new Date(player.created_at).toLocaleString()}
+      </div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <input type="number" id="modal-credits" value="100" min="1" style="width:100px">
+        <button class="btn btn-green btn-sm" onclick="giveCreditsTo('${player.id}')">💰 Give Credits</button>
+        <button class="btn btn-sm ${player.banned?'btn-green':'btn-outline'}" onclick="toggleBan('${player.id}',${player.banned});closePlayerModal()">
+          ${player.banned?'✅ Unban':'🚫 Ban'}
+        </button>
+      </div>
+    </div>
+  `;
+  document.getElementById('player-modal').classList.add('open');
+}
+
+function closePlayerModal() { document.getElementById('player-modal').classList.remove('open'); }
+
+async function giveCreditsTo(pid) {
+  const amt = parseInt(document.getElementById('modal-credits').value);
+  if (!amt) return;
+  const r = await ownerPost('/owner/credits/give', { player_id: pid, amount: amt });
+  if (r.success) { toast(`💰 Gave ${amt} credits!`, 'success'); closePlayerModal(); await loadPlayers(); await loadStats(); }
+}
+
+async function giveCredits() {
+  const pid = document.getElementById('give-credits-player').value.trim();
+  const amt = parseInt(document.getElementById('give-credits-amount').value);
+  if (!pid || !amt) return toast('Enter player ID and amount', 'error');
+  const r = await ownerPost('/owner/credits/give', { player_id: pid, amount: amt });
+  if (r.success) { toast(`💰 Gave ${amt} credits!`, 'success'); await loadPlayers(); await loadStats(); }
+  else toast(r.error || 'Error', 'error');
+}
+
+async function giveItem() {
+  const pid = document.getElementById('give-item-player').value.trim();
+  const name = document.getElementById('give-item-name').value.trim();
+  const qty = parseInt(document.getElementById('give-item-qty').value);
+  if (!pid || !name) return toast('Enter player ID and item name', 'error');
+  const r = await ownerPost('/owner/inventory/give', { player_id: pid, item_name: name, quantity: qty });
+  if (r.success) toast(`🎒 Gave ${qty}x ${name}!`, 'success');
+  else toast(r.error || 'Error', 'error');
+}
+
+// ── Cosmetics ─────────────────────────────────────────────────────────────────
+async function loadCosmetics() {
+  const gameId = document.getElementById('filter-cosmetic-game').value;
+  const url = gameId ? `/cosmetics/catalog?game_id=${encodeURIComponent(gameId)}` : '/owner/players';
+  // get all cosmetics across all games via a combined approach
+  let cosmetics = [];
+  if (gameId) {
+    const r = await fetch(`${BASE}/cosmetics/catalog?game_id=${encodeURIComponent(gameId)}`);
+    const d = await r.json();
+    cosmetics = d.cosmetics || [];
+  } else {
+    // fetch per game
+    for (const g of allGames) {
+      const r = await fetch(`${BASE}/cosmetics/catalog?game_id=${encodeURIComponent(g.game_id)}`);
+      const d = await r.json();
+      cosmetics = cosmetics.concat(d.cosmetics || []);
+    }
+  }
+  const tbody = document.getElementById('cosmetics-tbody');
+  if (!cosmetics.length) {
+    tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:var(--muted)">No cosmetics yet. Create some!</td></tr>';
+    return;
+  }
+  const rarityColors = { common:'badge-gray', uncommon:'badge-green', rare:'badge-blue', epic:'badge-purple', legendary:'badge-yellow' };
+  tbody.innerHTML = cosmetics.map(c => `
+    <tr>
+      <td><strong>${esc(c.name)}</strong><div style="font-size:11px;color:var(--muted)">${esc(c.description||'')}</div></td>
+      <td><span class="badge badge-purple">${esc(c.game_id)}</span></td>
+      <td>${esc(c.type)}</td>
+      <td><span class="badge ${rarityColors[c.rarity]||'badge-gray'}">${c.rarity}</span></td>
+      <td>💰 ${c.price}</td>
+      <td>
+        <button class="btn btn-red btn-sm" onclick="deleteCosmetic('${c.id}')">🗑 Delete</button>
+      </td>
+    </tr>
+  `).join('');
+}
+
+function openCosmeticModal() { document.getElementById('cosmetic-modal').classList.add('open'); }
+function closeCosmeticModal() { document.getElementById('cosmetic-modal').classList.remove('open'); }
+
+async function createCosmetic() {
+  const data = {
+    game_id: document.getElementById('cosm-game-id').value.trim(),
+    name: document.getElementById('cosm-name').value.trim(),
+    type: document.getElementById('cosm-type').value.trim(),
+    description: document.getElementById('cosm-desc').value.trim(),
+    price: parseInt(document.getElementById('cosm-price').value) || 0,
+    rarity: document.getElementById('cosm-rarity').value
+  };
+  if (!data.game_id || !data.name || !data.type) return toast('Game ID, name, and type required', 'error');
+  const r = await ownerPost('/owner/cosmetics/create', data);
+  if (r.success) {
+    toast('✨ Cosmetic created!', 'success');
+    closeCosmeticModal();
+    await loadCosmetics();
+    await loadStats();
+  } else toast(r.error || 'Error', 'error');
+}
+
+async function deleteCosmetic(id) {
+  if (!confirm('Delete this cosmetic? Players who own it will lose it.')) return;
+  const r = await ownerDelete(`/owner/cosmetics/${id}`);
+  if (r.success) { toast('🗑 Cosmetic deleted', 'success'); await loadCosmetics(); await loadStats(); }
+}
+
+async function grantCosmetic() {
+  const pid = document.getElementById('grant-cosm-player').value.trim();
+  const cid = document.getElementById('grant-cosm-id').value.trim();
+  if (!pid || !cid) return toast('Enter player ID and cosmetic ID', 'error');
+  const r = await ownerPost('/owner/cosmetics/grant', { player_id: pid, cosmetic_id: cid });
+  if (r.success) toast('🎁 Cosmetic granted!', 'success');
+  else toast(r.error || 'Error', 'error');
+}
+
+// ── Broadcasts ────────────────────────────────────────────────────────────────
+async function loadBroadcasts() {
+  const r = await fetch(`${BASE}/broadcasts`);
+  const d = await r.json();
+  const msgs = d.messages || [];
+  const tbody = document.getElementById('broadcasts-tbody');
+  if (!msgs.length) {
+    tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;color:var(--muted)">No active broadcasts</td></tr>';
+    return;
+  }
+  tbody.innerHTML = msgs.map(m => `
+    <tr>
+      <td>${esc(m.message)}</td>
+      <td>${m.game_id ? `<span class="badge badge-purple">${esc(m.game_id)}</span>` : '<span class="badge badge-gray">All Games</span>'}</td>
+      <td style="color:var(--muted);font-size:12px">${new Date(m.created_at).toLocaleString()}</td>
+      <td><button class="btn btn-red btn-sm" onclick="deleteBroadcast('${m.id}')">🗑</button></td>
+    </tr>
+  `).join('');
+}
+
+async function sendBroadcast() {
+  const msg = document.getElementById('broadcast-msg').value.trim();
+  const game = document.getElementById('broadcast-game').value.trim();
+  if (!msg) return toast('Enter a message', 'error');
+  const r = await ownerPost('/owner/broadcast', { message: msg, game_id: game || undefined });
+  if (r.success) {
+    toast('📡 Broadcast sent!', 'success');
+    document.getElementById('broadcast-msg').value = '';
+    await loadBroadcasts();
+  } else toast(r.error || 'Error', 'error');
+}
+
+async function deleteBroadcast(id) {
+  const r = await ownerDelete(`/owner/broadcast/${id}`);
+  if (r.success) { toast('🗑 Broadcast deleted', 'success'); await loadBroadcasts(); }
+}
+
+// ── API Docs ──────────────────────────────────────────────────────────────────
+const API_SECTIONS = [
+  {
+    title: '🔐 Authentication',
+    endpoints: [
+      { method: 'POST', path: '/register', desc: 'Create a new player account', body: '{ game_id, username, password }', returns: '{ player_id, token, credits }' },
+      { method: 'POST', path: '/login', desc: 'Login and get token', body: '{ game_id, username, password }', returns: '{ player_id, token, credits }' },
+      { method: 'GET', path: '/me', desc: 'Get current player info', auth: true, returns: '{ player_id, game_id, username, credits }' },
+    ]
+  },
+  {
+    title: '💾 Save Data',
+    endpoints: [
+      { method: 'POST', path: '/save', desc: 'Save game progress (any key/value JSON)', auth: true, body: '{ data: { level: 5, score: 1200, ... } }' },
+      { method: 'GET', path: '/load', desc: 'Load all saved data for this player', auth: true, returns: '{ data: { level, score, ... } }' },
+      { method: 'DELETE', path: '/save/:key', desc: 'Delete a specific save key', auth: true },
+    ]
+  },
+  {
+    title: '💰 Credits',
+    endpoints: [
+      { method: 'GET', path: '/credits', desc: 'Get player credit balance', auth: true },
+      { method: 'POST', path: '/credits/add', desc: 'Add credits (use for rewards in-game)', auth: true, body: '{ amount: 50 }' },
+      { method: 'POST', path: '/credits/spend', desc: 'Spend credits', auth: true, body: '{ amount: 100 }' },
+    ]
+  },
+  {
+    title: '🎒 Inventory',
+    endpoints: [
+      { method: 'GET', path: '/inventory', desc: 'Get player inventory', auth: true },
+      { method: 'POST', path: '/inventory/add', desc: 'Add item to player inventory', auth: true, body: '{ item_name, quantity, metadata }' },
+      { method: 'POST', path: '/inventory/remove', desc: 'Remove item from inventory', auth: true, body: '{ item_name, quantity }' },
+    ]
+  },
+  {
+    title: '✨ Cosmetics',
+    endpoints: [
+      { method: 'GET', path: '/cosmetics/catalog?game_id=xxx', desc: 'Get all cosmetics for a game', returns: '{ cosmetics: [...] }' },
+      { method: 'GET', path: '/cosmetics/owned', desc: 'Get cosmetics owned by player', auth: true },
+      { method: 'POST', path: '/cosmetics/buy', desc: 'Buy a cosmetic with credits', auth: true, body: '{ cosmetic_id }' },
+      { method: 'POST', path: '/cosmetics/equip', desc: 'Equip/unequip a cosmetic', auth: true, body: '{ cosmetic_id, equipped: true }' },
+    ]
+  },
+  {
+    title: '🏆 Leaderboard',
+    endpoints: [
+      { method: 'GET', path: '/leaderboard?game_id=xxx&stat=score&limit=10', desc: 'Get top players by a saved stat key', returns: '{ leaderboard: [{ rank, username, value }] }' },
+    ]
+  },
+  {
+    title: '📢 Broadcasts',
+    endpoints: [
+      { method: 'GET', path: '/broadcasts?game_id=xxx', desc: 'Get active broadcast messages for your game', returns: '{ messages: [...] }' },
+    ]
+  },
+];
+
+function renderApiDocs() {
+  const container = document.getElementById('api-sections');
+  container.innerHTML = API_SECTIONS.map(s => `
+    <div class="card">
+      <h3>${s.title}</h3>
+      ${s.endpoints.map(e => `
+        <div class="api-endpoint">
+          <span class="method ${e.method}">${e.method}</span><strong>${BASE}${e.path}</strong>
+          ${e.auth ? '<span class="badge badge-yellow" style="margin-left:8px">🔑 Auth Required</span>' : ''}
+          <div class="endpoint-desc">${e.desc}</div>
+          ${e.body ? `<div style="margin-top:6px;color:var(--muted)">Body: <code>${e.body}</code></div>` : ''}
+          ${e.returns ? `<div style="color:var(--muted)">Returns: <code>${e.returns}</code></div>` : ''}
+        </div>
+      `).join('')}
+    </div>
+  `).join('');
+}
+
+function renderPublicDocs() {
+  const el = document.getElementById('public-docs-content');
+  el.innerHTML = `
+    <div class="card" style="margin-bottom:16px">
+      <h3>🔗 Your Backend URL</h3>
+      <div style="background:var(--bg);padding:12px;border-radius:6px;font-family:monospace">${BASE}</div>
+      <p style="color:var(--muted);font-size:13px;margin-top:10px">
+        Use <code>x-player-token: TOKEN</code> header for authenticated requests.
+        Each game uses its own <code>game_id</code> to keep players separate.
+      </p>
+    </div>
+    ${API_SECTIONS.map(s => `
+      <div class="card">
+        <h3>${s.title}</h3>
+        ${s.endpoints.map(e => `
+          <div class="api-endpoint">
+            <span class="method ${e.method}">${e.method}</span><strong>${BASE}${e.path}</strong>
+            ${e.auth ? '<span class="badge badge-yellow" style="margin-left:8px">🔑 Auth</span>' : ''}
+            <div class="endpoint-desc">${e.desc}</div>
+            ${e.body ? `<div style="margin-top:6px;color:var(--muted)">Body: <code>${e.body}</code></div>` : ''}
+            ${e.returns ? `<div style="color:var(--muted)">Returns: <code>${e.returns}</code></div>` : ''}
+          </div>
+        `).join('')}
+      </div>
+    `).join('')}
+  `;
+}
+
+// ── Tabs ──────────────────────────────────────────────────────────────────────
+function switchTab(name) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  event.target.classList.add('active');
+  document.getElementById(`panel-${name}`).classList.add('active');
+}
+
+// ── Helpers ───────────────────────────────────────────────────────────────────
+function esc(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+async function ownerFetch(path) {
+  try {
+    const r = await fetch(`${BASE}${path}`, { headers: { 'x-owner-key': OWNER_KEY } });
+    return await r.json();
+  } catch { return { error: 'Network error' }; }
+}
+
+async function ownerPost(path, body) {
+  try {
+    const r = await fetch(`${BASE}${path}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'x-owner-key': OWNER_KEY },
+      body: JSON.stringify(body)
+    });
+    return await r.json();
+  } catch { return { error: 'Network error' }; }
+}
+
+async function ownerDelete(path) {
+  try {
+    const r = await fetch(`${BASE}${path}`, { method: 'DELETE', headers: { 'x-owner-key': OWNER_KEY } });
+    return await r.json();
+  } catch { return { error: 'Network error' }; }
+}
+
+function toast(msg, type = 'success') {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.className = type;
+  el.style.display = 'block';
+  setTimeout(() => el.style.display = 'none', 3000);
+}
+
+// Close modals on backdrop click
+document.querySelectorAll('.modal-overlay').forEach(o => {
+  o.addEventListener('click', e => { if (e.target === o) o.classList.remove('open'); });
+});
+</script>
+</body>
+</html>
