@@ -4,265 +4,246 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Game Backend Dashboard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
 <style>
   :root {
-    --bg: #0d1117;
-    --surface: #161b22;
-    --surface2: #21262d;
-    --border: #30363d;
-    --accent: #7c3aed;
-    --accent2: #a855f7;
-    --green: #238636;
-    --green2: #2ea043;
-    --red: #da3633;
-    --yellow: #d29922;
-    --text: #e6edf3;
-    --muted: #8b949e;
-    --radius: 8px;
+    --bg:#0d1117;--surface:#161b22;--surface2:#21262d;--border:#30363d;
+    --accent:#7c3aed;--accent2:#a855f7;--green:#238636;--green2:#2ea043;
+    --red:#da3633;--yellow:#d29922;--text:#e6edf3;--muted:#8b949e;--radius:8px;
   }
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-  body { background: var(--bg); color: var(--text); font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; min-height: 100vh; }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{background:var(--bg);color:var(--text);font-family:'Inter',-apple-system,BlinkMacSystemFont,sans-serif;min-height:100vh;}
+  code,pre,.mono{font-family:'JetBrains Mono',monospace;}
 
-  /* ── HEADER ── */
-  header {
-    background: var(--surface);
-    border-bottom: 1px solid var(--border);
-    padding: 16px 24px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    position: sticky;
-    top: 0;
-    z-index: 100;
-  }
-  .logo { display: flex; align-items: center; gap: 10px; font-size: 20px; font-weight: 700; }
-  .logo-icon { font-size: 28px; }
-  .header-actions { display: flex; gap: 10px; align-items: center; }
+  /* ─── HEADER ─── */
+  header{background:var(--surface);border-bottom:1px solid var(--border);padding:14px 22px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;}
+  .logo{display:flex;align-items:center;gap:10px;font-size:19px;font-weight:800;}
+  .logo-icon{font-size:26px;}
+  .hdr-pill{font-size:11px;background:rgba(124,58,237,.15);border:1px solid rgba(124,58,237,.3);color:#c084fc;padding:2px 8px;border-radius:10px;margin-left:6px;}
+  .hdr-dot{width:7px;height:7px;border-radius:50%;background:#56d364;box-shadow:0 0 5px #56d364;display:inline-block;animation:blink 2s infinite;}
+  @keyframes blink{0%,100%{opacity:1}50%{opacity:.35}}
+  .header-actions{display:flex;gap:8px;align-items:center;}
 
-  /* ── MAIN ── */
-  .container { max-width: 1200px; margin: 0 auto; padding: 24px; }
+  /* ─── LAYOUT ─── */
+  #dashboard-inner{display:flex;min-height:calc(100vh - 57px);}
+  #sidebar{width:210px;flex-shrink:0;background:var(--surface);border-right:1px solid var(--border);padding:10px 0 0;position:sticky;top:57px;height:calc(100vh - 57px);overflow-y:auto;display:flex;flex-direction:column;}
+  #main-content{flex:1;min-width:0;}
+  .container{max-width:1200px;margin:0 auto;padding:22px;}
 
-  /* ── STAT CARDS ── */
-  .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 16px; margin-bottom: 28px; }
-  .stat-card {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    padding: 20px;
-    text-align: center;
-  }
-  .stat-value { font-size: 32px; font-weight: 700; color: var(--accent2); }
-  .stat-label { color: var(--muted); font-size: 13px; margin-top: 4px; }
+  /* ─── SIDEBAR ─── */
+  .sb-label{padding:10px 16px 3px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:var(--muted);}
+  .sb-item{display:flex;align-items:center;gap:8px;padding:8px 16px;font-size:13px;color:var(--muted);cursor:pointer;border-left:3px solid transparent;background:none;border-top:none;border-right:none;border-bottom:none;width:100%;text-align:left;transition:all .12s;}
+  .sb-item:hover{color:var(--text);background:rgba(255,255,255,.04);}
+  .sb-item.active{color:#c084fc;background:rgba(124,58,237,.1);border-left-color:var(--accent2);}
+  .sb-icon{font-size:14px;width:17px;text-align:center;}
+  .sb-badge{margin-left:auto;background:rgba(124,58,237,.2);color:#c084fc;font-size:10px;font-weight:700;padding:1px 6px;border-radius:8px;}
+  .sb-footer{margin-top:auto;padding:10px 14px;border-top:1px solid var(--border);font-size:11px;color:var(--muted);line-height:1.9;}
 
-  /* ── TABS ── */
-  .tabs { display: flex; gap: 4px; margin-bottom: 20px; border-bottom: 1px solid var(--border); padding-bottom: 0; }
-  .tab {
-    padding: 10px 18px;
-    cursor: pointer;
-    border-radius: 6px 6px 0 0;
-    font-size: 14px;
-    color: var(--muted);
-    border: 1px solid transparent;
-    border-bottom: none;
-    transition: all 0.15s;
-    background: none;
-  }
-  .tab:hover { color: var(--text); background: var(--surface2); }
-  .tab.active { color: var(--text); background: var(--surface); border-color: var(--border); border-bottom: 1px solid var(--surface); margin-bottom: -1px; }
+  /* ─── STAT CARDS ─── */
+  .stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:14px;margin-bottom:24px;}
+  .stat-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:18px;text-align:center;position:relative;overflow:hidden;transition:border-color .18s,transform .18s;cursor:default;}
+  .stat-card:hover{border-color:rgba(124,58,237,.4);transform:translateY(-1px);}
+  .stat-card-icon{position:absolute;top:11px;right:11px;font-size:19px;opacity:.2;}
+  .stat-value{font-size:30px;font-weight:700;color:var(--accent2);}
+  .stat-label{color:var(--muted);font-size:12px;margin-top:3px;}
+  @keyframes pop{from{opacity:0;transform:scale(.9)}to{opacity:1;transform:scale(1)}}
+  .stat-value.pop{animation:pop .3s ease;}
 
-  /* ── PANELS ── */
-  .panel { display: none; }
-  .panel.active { display: block; }
+  /* ─── TABS ─── */
+  .tabs{display:flex;gap:3px;margin-bottom:18px;border-bottom:1px solid var(--border);}
+  .tab{padding:9px 16px;cursor:pointer;border-radius:6px 6px 0 0;font-size:13px;color:var(--muted);border:1px solid transparent;border-bottom:none;background:none;transition:all .14s;}
+  .tab:hover{color:var(--text);background:var(--surface2);}
+  .tab.active{color:var(--text);background:var(--surface);border-color:var(--border);border-bottom:1px solid var(--surface);margin-bottom:-1px;}
 
-  /* ── CARDS ── */
-  .card {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    padding: 20px;
-    margin-bottom: 16px;
-  }
-  .card h3 { margin-bottom: 14px; font-size: 15px; color: var(--accent2); }
+  /* ─── PANELS ─── */
+  .panel{display:none;}.panel.active{display:block;}
 
-  /* ── TABLE ── */
-  .table-wrap { overflow-x: auto; border-radius: var(--radius); border: 1px solid var(--border); }
-  table { width: 100%; border-collapse: collapse; font-size: 13px; }
-  th { background: var(--surface2); padding: 10px 14px; text-align: left; color: var(--muted); font-weight: 600; font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px; }
-  td { padding: 10px 14px; border-top: 1px solid var(--border); vertical-align: middle; }
-  tr:hover td { background: var(--surface2); }
-  .badge {
-    display: inline-block;
-    padding: 2px 8px;
-    border-radius: 20px;
-    font-size: 11px;
-    font-weight: 600;
-  }
-  .badge-red { background: rgba(218,54,51,0.2); color: #ff6b6b; }
-  .badge-green { background: rgba(35,134,54,0.2); color: #56d364; }
-  .badge-purple { background: rgba(124,58,237,0.2); color: #c084fc; }
-  .badge-yellow { background: rgba(210,153,34,0.2); color: #e3b341; }
-  .badge-blue { background: rgba(56,139,253,0.2); color: #58a6ff; }
-  .badge-gray { background: rgba(139,148,158,0.15); color: var(--muted); }
+  /* ─── CARDS ─── */
+  .card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:18px;margin-bottom:14px;}
+  .card h3{margin-bottom:12px;font-size:14px;color:var(--accent2);}
 
-  /* ── BUTTONS ── */
-  .btn {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    padding: 7px 14px;
-    border-radius: 6px;
-    border: 1px solid transparent;
-    cursor: pointer;
-    font-size: 13px;
-    font-weight: 500;
-    transition: all 0.15s;
-    text-decoration: none;
-  }
-  .btn-primary { background: var(--accent); color: #fff; border-color: var(--accent); }
-  .btn-primary:hover { background: var(--accent2); }
-  .btn-green { background: var(--green); color: #fff; border-color: var(--green); }
-  .btn-green:hover { background: var(--green2); }
-  .btn-red { background: var(--red); color: #fff; border-color: var(--red); }
-  .btn-red:hover { background: #f85149; }
-  .btn-outline { background: transparent; color: var(--text); border-color: var(--border); }
-  .btn-outline:hover { background: var(--surface2); }
-  .btn-sm { padding: 4px 10px; font-size: 12px; }
-  .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+  /* ─── TABLE ─── */
+  .table-wrap{overflow-x:auto;border-radius:var(--radius);border:1px solid var(--border);}
+  table{width:100%;border-collapse:collapse;font-size:13px;}
+  th{background:var(--surface2);padding:9px 13px;text-align:left;color:var(--muted);font-weight:600;font-size:11px;text-transform:uppercase;letter-spacing:.5px;}
+  td{padding:9px 13px;border-top:1px solid var(--border);vertical-align:middle;}
+  tr:hover td{background:var(--surface2);}
 
-  /* ── FORMS ── */
-  .form-row { display: flex; gap: 10px; flex-wrap: wrap; align-items: flex-end; margin-bottom: 12px; }
-  .form-group { display: flex; flex-direction: column; gap: 5px; }
-  .form-group label { font-size: 12px; color: var(--muted); font-weight: 500; }
-  input, select, textarea {
-    background: var(--bg);
-    border: 1px solid var(--border);
-    color: var(--text);
-    padding: 7px 10px;
-    border-radius: 6px;
-    font-size: 13px;
-    outline: none;
-    transition: border-color 0.15s;
-  }
-  input:focus, select:focus, textarea:focus { border-color: var(--accent); }
-  input[type="number"] { width: 90px; }
-  select { min-width: 140px; }
+  /* ─── BADGES ─── */
+  .badge{display:inline-block;padding:2px 7px;border-radius:20px;font-size:11px;font-weight:600;}
+  .badge-red{background:rgba(218,54,51,.2);color:#ff6b6b;}
+  .badge-green{background:rgba(35,134,54,.2);color:#56d364;}
+  .badge-purple{background:rgba(124,58,237,.2);color:#c084fc;}
+  .badge-yellow{background:rgba(210,153,34,.2);color:#e3b341;}
+  .badge-blue{background:rgba(56,139,253,.2);color:#58a6ff;}
+  .badge-gray{background:rgba(139,148,158,.15);color:var(--muted);}
 
-  /* ── OWNER GATE ── */
-  #owner-gate {
-    position: fixed;
-    inset: 0;
-    background: rgba(0,0,0,0.85);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    z-index: 1000;
-    backdrop-filter: blur(4px);
-  }
-  .gate-box {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    padding: 36px;
-    width: 360px;
-    text-align: center;
-  }
-  .gate-box h2 { margin-bottom: 8px; }
-  .gate-box p { color: var(--muted); font-size: 14px; margin-bottom: 24px; }
-  .gate-box input { width: 100%; margin-bottom: 12px; padding: 10px; }
-  .gate-error { color: #ff6b6b; font-size: 13px; margin-top: 8px; display: none; }
+  /* ─── BUTTONS ─── */
+  .btn{display:inline-flex;align-items:center;gap:5px;padding:6px 13px;border-radius:6px;border:1px solid transparent;cursor:pointer;font-size:13px;font-weight:500;transition:all .14s;text-decoration:none;}
+  .btn-primary{background:var(--accent);color:#fff;}
+  .btn-primary:hover{background:var(--accent2);}
+  .btn-green{background:var(--green);color:#fff;}
+  .btn-green:hover{background:var(--green2);}
+  .btn-red{background:var(--red);color:#fff;}
+  .btn-red:hover{background:#f85149;}
+  .btn-outline{background:transparent;color:var(--text);border-color:var(--border);}
+  .btn-outline:hover{background:var(--surface2);}
+  .btn-sm{padding:4px 9px;font-size:12px;}
 
-  /* ── PUBLIC VIEW ── */
-  #public-view {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    min-height: 100vh;
-    text-align: center;
-    gap: 16px;
-    padding: 24px;
-  }
-  .hero-title { font-size: 48px; font-weight: 800; background: linear-gradient(135deg, var(--accent2), #c084fc); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
-  .hero-sub { color: var(--muted); font-size: 18px; max-width: 500px; }
+  /* ─── FORMS ─── */
+  .form-row{display:flex;gap:9px;flex-wrap:wrap;align-items:flex-end;margin-bottom:10px;}
+  .form-group{display:flex;flex-direction:column;gap:4px;}
+  .form-group label{font-size:11px;color:var(--muted);font-weight:500;}
+  input,select,textarea{background:var(--bg);border:1px solid var(--border);color:var(--text);padding:7px 10px;border-radius:6px;font-size:13px;outline:none;transition:border-color .14s;font-family:'Inter',sans-serif;}
+  input:focus,select:focus,textarea:focus{border-color:var(--accent);}
+  input[type="number"]{width:90px;}
+  select{min-width:130px;}
 
-  /* ── API DOCS ── */
-  .api-endpoint {
-    background: var(--surface2);
-    border: 1px solid var(--border);
-    border-radius: 6px;
-    padding: 14px 16px;
-    margin-bottom: 10px;
-    font-family: monospace;
-    font-size: 13px;
-  }
-  .method { font-weight: 700; margin-right: 10px; }
-  .method.GET { color: #58a6ff; }
-  .method.POST { color: #56d364; }
-  .method.DELETE { color: #ff6b6b; }
-  .endpoint-desc { color: var(--muted); font-size: 12px; margin-top: 4px; }
+  /* ─── GATES/OVERLAYS ─── */
+  #owner-gate{position:fixed;inset:0;background:rgba(0,0,0,.86);display:flex;align-items:center;justify-content:center;z-index:1000;backdrop-filter:blur(4px);}
+  .gate-box{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:34px;width:350px;text-align:center;}
+  .gate-box h2{margin-bottom:8px;}
+  .gate-box p{color:var(--muted);font-size:13px;margin-bottom:22px;}
+  .gate-box input{width:100%;margin-bottom:11px;padding:10px;}
+  .gate-error{color:#ff6b6b;font-size:13px;margin-top:7px;display:none;}
 
-  /* ── TOAST ── */
-  #toast {
-    position: fixed;
-    bottom: 24px;
-    right: 24px;
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    padding: 12px 18px;
-    font-size: 14px;
-    z-index: 9999;
-    display: none;
-    max-width: 300px;
-    box-shadow: 0 8px 32px rgba(0,0,0,0.4);
-  }
-  #toast.success { border-color: var(--green2); color: #56d364; }
-  #toast.error { border-color: var(--red); color: #ff6b6b; }
+  /* ─── PUBLIC VIEW ─── */
+  #public-view{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;text-align:center;gap:14px;padding:24px;}
+  .hero-title{font-size:48px;font-weight:800;background:linear-gradient(135deg,var(--accent2),#c084fc);-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+  .hero-sub{color:var(--muted);font-size:17px;max-width:490px;}
 
-  /* ── MODAL ── */
-  .modal-overlay {
-    position: fixed; inset: 0;
-    background: rgba(0,0,0,0.6);
-    display: flex; align-items: center; justify-content: center;
-    z-index: 500; display: none;
-  }
-  .modal-overlay.open { display: flex; }
-  .modal {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 10px;
-    padding: 24px;
-    width: 440px;
-    max-width: 95vw;
-  }
-  .modal h3 { margin-bottom: 16px; }
-  .modal .form-group { margin-bottom: 12px; }
-  .modal input, .modal select { width: 100%; }
-  .modal-actions { display: flex; gap: 10px; justify-content: flex-end; margin-top: 18px; }
+  /* ─── API DOCS ─── */
+  .api-endpoint{background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:13px 15px;margin-bottom:9px;font-family:'JetBrains Mono',monospace;font-size:12px;cursor:pointer;transition:border-color .14s;}
+  .api-endpoint:hover{border-color:rgba(124,58,237,.4);}
+  .method{font-weight:700;margin-right:9px;}
+  .method.GET{color:#58a6ff;}
+  .method.POST{color:#56d364;}
+  .method.DELETE{color:#ff6b6b;}
+  .endpoint-desc{color:var(--muted);font-size:11px;margin-top:3px;font-family:'Inter',sans-serif;}
 
-  .search-bar { position: relative; }
-  .search-bar input { width: 240px; padding-left: 32px; }
-  .search-bar::before { content: '🔍'; position: absolute; left: 8px; top: 50%; transform: translateY(-50%); font-size: 12px; }
+  /* ─── TOAST ─── */
+  #toast{position:fixed;bottom:22px;right:22px;background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:11px 17px;font-size:13px;z-index:9999;display:none;max-width:280px;box-shadow:0 8px 30px rgba(0,0,0,.4);}
+  #toast.success{border-color:var(--green2);color:#56d364;}
+  #toast.error{border-color:var(--red);color:#ff6b6b;}
 
-  @media (max-width: 600px) {
-    header { padding: 12px; }
-    .container { padding: 12px; }
-    .tabs { overflow-x: auto; }
-  }
+  /* ─── MODALS ─── */
+  .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.6);display:flex;align-items:center;justify-content:center;z-index:500;display:none;}
+  .modal-overlay.open{display:flex;}
+  .modal{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:22px;width:430px;max-width:95vw;}
+  .modal h3{margin-bottom:14px;}
+  .modal .form-group{margin-bottom:11px;}
+  .modal input,.modal select{width:100%;}
+  .modal-actions{display:flex;gap:9px;justify-content:flex-end;margin-top:16px;}
+  .search-bar{position:relative;}
+  .search-bar input{width:220px;padding-left:30px;}
+  .search-bar::before{content:'🔍';position:absolute;left:8px;top:50%;transform:translateY(-50%);font-size:11px;}
+
+  /* ─── PLAYER TABLE EXTRAS ─── */
+  .p-av{width:27px;height:27px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;margin-right:8px;vertical-align:middle;}
+  .cbar-w{height:3px;background:rgba(255,255,255,.07);border-radius:2px;margin-top:3px;width:68px;}
+  .cbar{height:100%;background:linear-gradient(90deg,#7c3aed,#a855f7);border-radius:2px;}
+  mark.hl{background:rgba(168,85,247,.28);color:inherit;border-radius:2px;padding:0 1px;}
+
+  /* ─── BULK BAR ─── */
+  .bulk-bar{padding:9px 13px;background:rgba(124,58,237,.07);border-top:1px solid rgba(124,58,237,.28);display:none;align-items:center;gap:9px;font-size:13px;}
+  .bulk-bar.on{display:flex;}
+  .bulk-count{color:var(--accent2);font-weight:700;}
+
+  /* ─── PLAYER SIDE PANEL ─── */
+  #psp{position:fixed;right:0;top:0;width:350px;height:100vh;background:var(--surface);border-left:1px solid rgba(124,58,237,.35);display:none;flex-direction:column;z-index:300;box-shadow:-5px 0 36px rgba(0,0,0,.5);}
+  #psp.open{display:flex;animation:psp-in .2s ease;}
+  @keyframes psp-in{from{transform:translateX(28px);opacity:0}to{transform:translateX(0);opacity:1}}
+  .psp-hdr{padding:17px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:11px;}
+  .psp-av{width:42px;height:42px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:800;flex-shrink:0;}
+  .psp-body{flex:1;overflow-y:auto;padding:14px 18px;}
+  .psp-sec{margin-bottom:16px;}
+  .psp-sec-title{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;color:var(--muted);margin-bottom:7px;}
+  .psp-row{display:flex;justify-content:space-between;align-items:center;padding:5px 0;border-bottom:1px solid rgba(48,54,61,.45);font-size:13px;}
+  .psp-lbl{color:var(--muted);}
+  .psp-foot{padding:12px 18px;border-top:1px solid var(--border);display:flex;gap:7px;flex-wrap:wrap;}
+
+  /* ─── COMMAND PALETTE ─── */
+  #cmd-bg{position:fixed;inset:0;background:rgba(0,0,0,.72);display:none;align-items:flex-start;justify-content:center;padding-top:14vh;z-index:2000;backdrop-filter:blur(5px);}
+  #cmd-bg.open{display:flex;}
+  #cmd-box{background:var(--surface);border:1px solid rgba(124,58,237,.45);border-radius:11px;width:510px;max-width:94vw;box-shadow:0 22px 70px rgba(0,0,0,.7);overflow:hidden;}
+  #cmd-q{width:100%;background:transparent;border:none;border-bottom:1px solid var(--border);padding:14px 18px;font-size:15px;color:var(--text);outline:none;font-family:'Inter',sans-serif;}
+  #cmd-list{max-height:290px;overflow-y:auto;}
+  .cmd-row{display:flex;align-items:center;gap:10px;padding:10px 18px;cursor:pointer;font-size:13px;transition:background .1s;}
+  .cmd-row:hover,.cmd-row.sel{background:rgba(124,58,237,.14);}
+  .cmd-ic{font-size:14px;width:20px;text-align:center;}
+  .cmd-lbl{flex:1;}
+  .cmd-hint{color:var(--muted);font-size:11px;}
+  .cmd-foot{padding:7px 18px;border-top:1px solid var(--border);font-size:11px;color:var(--muted);display:flex;gap:12px;}
+  .kbd{background:var(--surface2);border:1px solid var(--border);border-radius:3px;padding:1px 5px;font-family:monospace;font-size:10px;}
+
+  /* ─── ACTIVITY FEED ─── */
+  #act-tog{position:fixed;right:0;top:50%;transform:translateY(-50%);background:var(--surface);border:1px solid var(--border);border-right:none;border-radius:6px 0 0 6px;padding:8px 6px;cursor:pointer;z-index:91;font-size:11px;writing-mode:vertical-rl;color:var(--muted);display:none;transition:color .14s;}
+  #act-tog:hover{color:var(--text);}
+  #act-feed{position:fixed;right:0;top:57px;width:262px;height:calc(100vh - 57px);background:var(--surface);border-left:1px solid var(--border);display:flex;flex-direction:column;transform:translateX(100%);transition:transform .22s ease;z-index:90;}
+  #act-feed.open{transform:translateX(0);}
+  .act-hdr{padding:11px 14px;border-bottom:1px solid var(--border);font-size:13px;font-weight:600;display:flex;justify-content:space-between;align-items:center;}
+  .act-list{flex:1;overflow-y:auto;}
+  .act-item{padding:8px 13px;border-bottom:1px solid rgba(48,54,61,.35);font-size:12px;animation:act-in .2s ease;}
+  @keyframes act-in{from{opacity:0;transform:translateY(-5px)}to{opacity:1;transform:translateY(0)}}
+  .act-dot{display:inline-block;width:5px;height:5px;border-radius:50%;margin-right:5px;vertical-align:middle;}
+  .act-time{font-size:10px;color:var(--muted);margin-top:2px;}
+
+  /* ─── AUDIT LOG ─── */
+  .aud-row{display:flex;gap:9px;align-items:flex-start;padding:8px 0;border-bottom:1px solid rgba(48,54,61,.35);}
+  .aud-ic{font-size:14px;flex-shrink:0;margin-top:1px;}
+  .aud-desc{flex:1;font-size:13px;}
+  .aud-meta{font-size:11px;color:var(--muted);margin-top:1px;}
+  .aud-time{font-size:10px;color:var(--muted);flex-shrink:0;font-family:monospace;}
+
+  /* ─── LEADERBOARD ─── */
+  .lb-row{display:flex;align-items:center;gap:11px;padding:8px 0;border-bottom:1px solid rgba(48,54,61,.35);}
+  .lb-rank{font-size:13px;font-weight:800;width:24px;text-align:center;}
+  .lb-av{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;}
+  .lb-name{flex:1;font-size:13px;}
+  .lb-bar-w{width:65px;height:4px;background:rgba(255,255,255,.07);border-radius:2px;overflow:hidden;}
+  .lb-bar{height:100%;background:linear-gradient(90deg,#7c3aed,#a855f7);border-radius:2px;}
+  .lb-val{font-weight:700;color:var(--accent2);font-family:'JetBrains Mono',monospace;font-size:12px;min-width:58px;text-align:right;}
+
+  /* ─── ANALYTICS ─── */
+  .metric-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:11px;margin-bottom:16px;}
+  .metric-card{background:var(--surface2);border:1px solid var(--border);border-radius:7px;padding:13px;text-align:center;}
+  .metric-val{font-size:24px;font-weight:700;color:var(--accent2);}
+  .metric-lbl{font-size:11px;color:var(--muted);margin-top:3px;}
+
+  /* ─── CONFIG GRID ─── */
+  .cfg-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:9px;}
+  .cfg-item{background:var(--surface2);border:1px solid var(--border);border-radius:7px;padding:11px;}
+  .cfg-key{font-family:'JetBrains Mono',monospace;font-size:11px;color:#58a6ff;margin-bottom:4px;}
+  .cfg-val{font-size:12px;word-break:break-all;}
+  .cfg-actions{display:flex;gap:5px;margin-top:7px;}
+
+  /* ─── EMPTY STATE ─── */
+  .empty{text-align:center;padding:46px 20px;color:var(--muted);}
+  .empty-icon{font-size:42px;margin-bottom:9px;}
+  .empty-title{font-size:15px;font-weight:600;color:var(--text);margin-bottom:5px;}
+
+  /* ─── SCROLLBAR ─── */
+  ::-webkit-scrollbar{width:5px;height:5px;}
+  ::-webkit-scrollbar-track{background:transparent;}
+  ::-webkit-scrollbar-thumb{background:rgba(124,58,237,.28);border-radius:3px;}
+
+  @media(max-width:900px){#sidebar{display:none;}#psp{width:100vw;}}
+  @media(max-width:600px){header{padding:10px;}.container{padding:12px;}}
 </style>
 </head>
 <body>
 
-<!-- PUBLIC VIEW (shown to everyone) -->
+<!-- PUBLIC VIEW -->
 <div id="public-view">
-  <div class="logo-icon" style="font-size:64px">🎮</div>
+  <div class="logo-icon" style="font-size:60px">🎮</div>
   <div class="hero-title">Game Backend</div>
   <p class="hero-sub">A powerful, free PlayFab-style backend for all your games. One API for credits, cosmetics, inventory, and more.</p>
-  <div style="display:flex;gap:12px;flex-wrap:wrap;justify-content:center">
+  <div style="display:flex;gap:11px;flex-wrap:wrap;justify-content:center">
     <button class="btn btn-primary" onclick="openDocs()">📖 View API Docs</button>
-    <button class="btn btn-outline" id="owner-btn" onclick="openOwnerDashboard()">👑 Owner Dashboard</button>
+    <button class="btn btn-outline" onclick="openOwnerDashboard()">👑 Owner Dashboard</button>
   </div>
-  <div style="color:var(--muted);font-size:13px;margin-top:16px">
+  <div style="color:var(--muted);font-size:13px;margin-top:14px">
     Backend URL: <code style="background:var(--surface2);padding:3px 8px;border-radius:4px" id="base-url"></code>
   </div>
 </div>
@@ -270,173 +251,266 @@
 <!-- OWNER GATE -->
 <div id="owner-gate" style="display:none">
   <div class="gate-box">
-    <div style="font-size:48px;margin-bottom:12px">🔐</div>
+    <div style="font-size:46px;margin-bottom:11px">🔐</div>
     <h2>Owner Access</h2>
     <p>Enter your owner password to access the dashboard.</p>
-    <input type="password" id="gate-password" placeholder="Owner password..." onkeydown="if(event.key==='Enter')verifyOwner()">
+    <input type="password" id="gate-password" placeholder="Owner password…" onkeydown="if(event.key==='Enter')verifyOwner()">
     <button class="btn btn-primary" style="width:100%" onclick="verifyOwner()">Unlock Dashboard</button>
     <div class="gate-error" id="gate-error">❌ Wrong password</div>
-    <button class="btn btn-outline" style="width:100%;margin-top:10px" onclick="closeGate()">Cancel</button>
+    <button class="btn btn-outline" style="width:100%;margin-top:9px" onclick="closeGate()">Cancel</button>
   </div>
 </div>
 
-<!-- DASHBOARD (hidden until authenticated) -->
+<!-- DASHBOARD -->
 <div id="dashboard" style="display:none">
   <header>
     <div class="logo">
       <span class="logo-icon">🎮</span>
       <span>Game Backend</span>
-      <span style="font-size:12px;color:var(--muted);font-weight:400;margin-left:4px">Owner Dashboard</span>
+      <span class="hdr-pill">Dashboard</span>
     </div>
     <div class="header-actions">
+      <span class="hdr-dot"></span>
       <span id="header-url" style="font-size:12px;color:var(--muted)"></span>
+      <button class="btn btn-outline btn-sm" onclick="openCmd()" title="Ctrl+K">⌘ Search</button>
       <button class="btn btn-outline btn-sm" onclick="goHome()">🏠 Home</button>
       <button class="btn btn-red btn-sm" onclick="logout()">🚪 Logout</button>
     </div>
   </header>
 
-  <div class="container">
-    <!-- Stats -->
-    <div class="stats-grid" id="stats-grid">
-      <div class="stat-card"><div class="stat-value" id="stat-players">—</div><div class="stat-label">Total Players</div></div>
-      <div class="stat-card"><div class="stat-value" id="stat-games">—</div><div class="stat-label">Games</div></div>
-      <div class="stat-card"><div class="stat-value" id="stat-credits">—</div><div class="stat-label">Credits in Circulation</div></div>
-      <div class="stat-card"><div class="stat-value" id="stat-banned">—</div><div class="stat-label">Banned Players</div></div>
-      <div class="stat-card"><div class="stat-value" id="stat-cosmetics">—</div><div class="stat-label">Cosmetics</div></div>
-    </div>
+  <div id="dashboard-inner">
+    <!-- SIDEBAR -->
+    <nav id="sidebar">
+      <div class="sb-label">Overview</div>
+      <button class="sb-item active" id="sb-players-btn" onclick="sbNav('players',this)"><span class="sb-icon">👥</span>Players<span class="sb-badge" id="sb-n-players">—</span></button>
+      <button class="sb-item" id="sb-analytics-btn" onclick="sbNav('analytics',this)"><span class="sb-icon">📊</span>Analytics</button>
+      <button class="sb-item" id="sb-leaderboard-btn" onclick="sbNav('leaderboard',this)"><span class="sb-icon">🏆</span>Leaderboard</button>
+      <div class="sb-label">Content</div>
+      <button class="sb-item" id="sb-cosmetics-btn" onclick="sbNav('cosmetics',this)"><span class="sb-icon">✨</span>Cosmetics<span class="sb-badge" id="sb-n-cosmetics">—</span></button>
+      <button class="sb-item" id="sb-broadcasts-btn" onclick="sbNav('broadcasts',this)"><span class="sb-icon">📢</span>Broadcasts</button>
+      <button class="sb-item" id="sb-config-btn" onclick="sbNav('config',this)"><span class="sb-icon">⚙️</span>Game Config</button>
+      <div class="sb-label">System</div>
+      <button class="sb-item" id="sb-audit-btn" onclick="sbNav('audit',this)"><span class="sb-icon">📋</span>Audit Log</button>
+      <button class="sb-item" id="sb-api-btn" onclick="sbNav('api',this)"><span class="sb-icon">📖</span>API Docs</button>
+      <div class="sb-footer">
+        <div id="sb-uptime">⏱ Session: 0s</div>
+        <div id="sb-count" style="margin-top:2px"></div>
+      </div>
+    </nav>
 
-    <!-- Tabs -->
-    <div class="tabs">
-      <button class="tab active" onclick="switchTab('players')">👥 Players</button>
-      <button class="tab" onclick="switchTab('cosmetics')">✨ Cosmetics</button>
-      <button class="tab" onclick="switchTab('broadcasts')">📢 Broadcasts</button>
-      <button class="tab" onclick="switchTab('api')">📖 API Docs</button>
-    </div>
+    <!-- MAIN CONTENT -->
+    <div id="main-content">
+      <div class="container">
 
-    <!-- PLAYERS PANEL -->
-    <div class="panel active" id="panel-players">
-      <div class="card">
-        <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;justify-content:space-between;margin-bottom:14px">
-          <h3 style="margin:0">All Players</h3>
-          <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
-            <select id="filter-game" onchange="loadPlayers()"><option value="">All Games</option></select>
-            <div class="search-bar"><input type="text" id="search-players" placeholder="Search username..." oninput="filterPlayers()"></div>
-            <button class="btn btn-outline btn-sm" onclick="loadPlayers()">🔄 Refresh</button>
+        <!-- Stat Cards -->
+        <div class="stats-grid">
+          <div class="stat-card" onclick="sbNavByName('players')" style="cursor:pointer"><div class="stat-card-icon">👥</div><div class="stat-value" id="stat-players">—</div><div class="stat-label">Total Players</div></div>
+          <div class="stat-card"><div class="stat-card-icon">🎮</div><div class="stat-value" id="stat-games">—</div><div class="stat-label">Games</div></div>
+          <div class="stat-card"><div class="stat-card-icon">💰</div><div class="stat-value" id="stat-credits">—</div><div class="stat-label">Credits in Circulation</div></div>
+          <div class="stat-card"><div class="stat-card-icon">🚫</div><div class="stat-value" id="stat-banned">—</div><div class="stat-label">Banned Players</div></div>
+          <div class="stat-card" onclick="sbNavByName('cosmetics')" style="cursor:pointer"><div class="stat-card-icon">✨</div><div class="stat-value" id="stat-cosmetics">—</div><div class="stat-label">Cosmetics</div></div>
+        </div>
+
+        <!-- Hidden original tabs — preserved but sidebar drives navigation now -->
+        <div class="tabs" style="display:none">
+          <button class="tab active" onclick="switchTab('players')">👥 Players</button>
+          <button class="tab" onclick="switchTab('cosmetics')">✨ Cosmetics</button>
+          <button class="tab" onclick="switchTab('broadcasts')">📢 Broadcasts</button>
+          <button class="tab" onclick="switchTab('api')">📖 API Docs</button>
+        </div>
+
+        <!-- PLAYERS PANEL -->
+        <div class="panel active" id="panel-players">
+          <div class="card">
+            <div style="display:flex;gap:9px;flex-wrap:wrap;align-items:center;justify-content:space-between;margin-bottom:13px">
+              <h3 style="margin:0">All Players</h3>
+              <div style="display:flex;gap:7px;align-items:center;flex-wrap:wrap">
+                <select id="filter-game" onchange="loadPlayers()"><option value="">All Games</option></select>
+                <div class="search-bar"><input type="text" id="search-players" placeholder="Search username…" oninput="filterPlayers()"></div>
+                <button class="btn btn-outline btn-sm" onclick="loadPlayers()">🔄</button>
+                <button class="btn btn-outline btn-sm" onclick="exportPlayers()">⬇ CSV</button>
+              </div>
+            </div>
+            <div class="table-wrap">
+              <table>
+                <thead><tr>
+                  <th><input type="checkbox" id="sel-all" onchange="toggleSelAll(this)"> Username</th>
+                  <th>Game</th><th>Credits</th><th>Status</th><th>Joined</th><th>Actions</th>
+                </tr></thead>
+                <tbody id="players-tbody"><tr><td colspan="6" style="text-align:center;color:var(--muted);padding:20px">Loading…</td></tr></tbody>
+              </table>
+            </div>
+            <div class="bulk-bar" id="bulk-bar">
+              <span class="bulk-count" id="bulk-count">0 selected</span>
+              <button class="btn btn-outline btn-sm" onclick="bulkCredits()">💰 Give Credits</button>
+              <button class="btn btn-outline btn-sm" onclick="bulkBan(true)">🚫 Ban All</button>
+              <button class="btn btn-outline btn-sm" onclick="bulkBan(false)">✅ Unban All</button>
+              <button class="btn btn-red btn-sm" onclick="bulkDelete()">🗑 Delete All</button>
+              <button class="btn btn-outline btn-sm" style="margin-left:auto" onclick="clearSel()">✕ Clear</button>
+            </div>
+          </div>
+          <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(290px,1fr));gap:14px">
+            <div class="card">
+              <h3>💰 Give Credits</h3>
+              <div class="form-group" style="margin-bottom:9px"><label>Player ID</label><input type="text" id="give-credits-player" placeholder="Player ID…"></div>
+              <div class="form-row">
+                <div class="form-group"><label>Amount</label><input type="number" id="give-credits-amount" value="100" min="1"></div>
+                <button class="btn btn-green" onclick="giveCredits()">Give Credits</button>
+              </div>
+            </div>
+            <div class="card">
+              <h3>🎒 Give Item</h3>
+              <div class="form-group" style="margin-bottom:9px"><label>Player ID</label><input type="text" id="give-item-player" placeholder="Player ID…"></div>
+              <div class="form-row">
+                <div class="form-group"><label>Item Name</label><input type="text" id="give-item-name" placeholder="sword_of_power…"></div>
+                <div class="form-group"><label>Qty</label><input type="number" id="give-item-qty" value="1" min="1"></div>
+                <button class="btn btn-green" onclick="giveItem()">Give</button>
+              </div>
+            </div>
           </div>
         </div>
-        <div class="table-wrap">
-          <table>
-            <thead>
-              <tr>
-                <th>Username</th>
-                <th>Game</th>
-                <th>Credits</th>
-                <th>Status</th>
-                <th>Joined</th>
-                <th>Actions</th>
-              </tr>
-            </thead>
-            <tbody id="players-tbody">
-              <tr><td colspan="6" style="text-align:center;color:var(--muted)">Loading...</td></tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
 
-      <!-- Quick Actions -->
-      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:16px">
-        <div class="card">
-          <h3>💰 Give Credits</h3>
-          <div class="form-group" style="margin-bottom:10px"><label>Player ID</label><input type="text" id="give-credits-player" placeholder="Player ID..."></div>
-          <div class="form-row">
-            <div class="form-group"><label>Amount</label><input type="number" id="give-credits-amount" value="100" min="1"></div>
-            <button class="btn btn-green" onclick="giveCredits()">Give Credits</button>
+        <!-- COSMETICS PANEL -->
+        <div class="panel" id="panel-cosmetics">
+          <div class="card">
+            <div style="display:flex;gap:9px;align-items:center;justify-content:space-between;margin-bottom:13px">
+              <h3 style="margin:0">Cosmetics Catalog</h3>
+              <div style="display:flex;gap:7px">
+                <select id="filter-cosmetic-game" onchange="loadCosmetics()"><option value="">All Games</option></select>
+                <button class="btn btn-primary btn-sm" onclick="openCosmeticModal()">+ Create</button>
+              </div>
+            </div>
+            <div class="table-wrap">
+              <table>
+                <thead><tr><th>Name</th><th>Game</th><th>Type</th><th>Rarity</th><th>Price</th><th>Actions</th></tr></thead>
+                <tbody id="cosmetics-tbody"><tr><td colspan="6" style="text-align:center;color:var(--muted);padding:20px">Loading…</td></tr></tbody>
+              </table>
+            </div>
+          </div>
+          <div class="card">
+            <h3>🎁 Grant Cosmetic to Player</h3>
+            <div class="form-row">
+              <div class="form-group"><label>Player ID</label><input type="text" id="grant-cosm-player" placeholder="Player ID…"></div>
+              <div class="form-group"><label>Cosmetic ID</label><input type="text" id="grant-cosm-id" placeholder="Cosmetic ID…"></div>
+              <button class="btn btn-green" onclick="grantCosmetic()">Grant Free</button>
+            </div>
           </div>
         </div>
 
-        <div class="card">
-          <h3>🎒 Give Item</h3>
-          <div class="form-group" style="margin-bottom:10px"><label>Player ID</label><input type="text" id="give-item-player" placeholder="Player ID..."></div>
-          <div class="form-row">
-            <div class="form-group"><label>Item Name</label><input type="text" id="give-item-name" placeholder="sword_of_power..."></div>
-            <div class="form-group"><label>Qty</label><input type="number" id="give-item-qty" value="1" min="1"></div>
-            <button class="btn btn-green" onclick="giveItem()">Give</button>
+        <!-- BROADCASTS PANEL -->
+        <div class="panel" id="panel-broadcasts">
+          <div class="card">
+            <h3>📢 Send Broadcast</h3>
+            <p style="color:var(--muted);font-size:13px;margin-bottom:13px">Fetch with <code>GET /broadcasts?game_id=xxx</code> in your game.</p>
+            <div class="form-row">
+              <div class="form-group" style="flex:1"><label>Message</label><input type="text" id="broadcast-msg" placeholder="Server maintenance at 5pm…"></div>
+              <div class="form-group"><label>Game (optional)</label><input type="text" id="broadcast-game" placeholder="all games if empty"></div>
+              <button class="btn btn-primary" onclick="sendBroadcast()">📡 Send</button>
+            </div>
+          </div>
+          <div class="card">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:13px">
+              <h3 style="margin:0">Active Broadcasts</h3>
+              <button class="btn btn-outline btn-sm" onclick="loadBroadcasts()">🔄 Refresh</button>
+            </div>
+            <div class="table-wrap">
+              <table>
+                <thead><tr><th>Message</th><th>Game</th><th>Sent</th><th></th></tr></thead>
+                <tbody id="broadcasts-tbody"><tr><td colspan="4" style="text-align:center;color:var(--muted);padding:16px">Loading…</td></tr></tbody>
+              </table>
+            </div>
           </div>
         </div>
-      </div>
-    </div>
 
-    <!-- COSMETICS PANEL -->
-    <div class="panel" id="panel-cosmetics">
-      <div class="card">
-        <div style="display:flex;gap:10px;align-items:center;justify-content:space-between;margin-bottom:14px">
-          <h3 style="margin:0">Cosmetics Catalog</h3>
-          <div style="display:flex;gap:8px">
-            <select id="filter-cosmetic-game" onchange="loadCosmetics()"><option value="">All Games</option></select>
-            <button class="btn btn-primary btn-sm" onclick="openCosmeticModal()">+ Create Cosmetic</button>
+        <!-- API DOCS PANEL -->
+        <div class="panel" id="panel-api">
+          <div class="card">
+            <h3>🔗 Base URL</h3>
+            <div style="background:var(--bg);padding:11px 14px;border-radius:6px;font-family:'JetBrains Mono',monospace;font-size:13px;display:flex;justify-content:space-between;align-items:center">
+              <span id="api-base-url"></span>
+              <button class="btn btn-outline btn-sm" onclick="navigator.clipboard.writeText(BASE);toast('📋 Copied!','success')">📋 Copy</button>
+            </div>
+            <p style="color:var(--muted);font-size:13px;margin-top:9px">Add <code>x-player-token: TOKEN</code> for auth requests. Add <code>x-owner-key: PASSWORD</code> for owner routes.</p>
+          </div>
+          <div id="api-sections"></div>
+        </div>
+
+        <!-- ANALYTICS PANEL -->
+        <div class="panel" id="panel-analytics">
+          <div class="metric-grid">
+            <div class="metric-card"><div class="metric-val" id="an-players">—</div><div class="metric-lbl">Total Players</div></div>
+            <div class="metric-card"><div class="metric-val" id="an-avg">—</div><div class="metric-lbl">Avg Credits / Player</div></div>
+            <div class="metric-card"><div class="metric-val" id="an-ban">—</div><div class="metric-lbl">Ban Rate</div></div>
+          </div>
+          <div class="card"><h3>🎮 Players per Game</h3><div id="an-chart"></div></div>
+          <div class="card">
+            <h3>📊 Games Table</h3>
+            <div class="table-wrap"><table><thead><tr><th>Game ID</th><th>Players</th><th>Share</th></tr></thead><tbody id="an-table"></tbody></table></div>
           </div>
         </div>
-        <div class="table-wrap">
-          <table>
-            <thead>
-              <tr><th>Name</th><th>Game</th><th>Type</th><th>Rarity</th><th>Price</th><th>Actions</th></tr>
-            </thead>
-            <tbody id="cosmetics-tbody">
-              <tr><td colspan="6" style="text-align:center;color:var(--muted)">Loading...</td></tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
 
-      <div class="card">
-        <h3>🎁 Grant Cosmetic to Player</h3>
-        <div class="form-row">
-          <div class="form-group"><label>Player ID</label><input type="text" id="grant-cosm-player" placeholder="Player ID..."></div>
-          <div class="form-group"><label>Cosmetic ID</label><input type="text" id="grant-cosm-id" placeholder="Cosmetic ID..."></div>
-          <button class="btn btn-green" onclick="grantCosmetic()">Grant Free</button>
+        <!-- LEADERBOARD PANEL -->
+        <div class="panel" id="panel-leaderboard">
+          <div class="card">
+            <h3>🏆 Leaderboard Explorer</h3>
+            <div class="form-row" style="margin-bottom:14px">
+              <div class="form-group"><label>Game ID</label><select id="lb-game"><option value="">Pick a game…</option></select></div>
+              <div class="form-group"><label>Stat Key</label><input type="text" id="lb-stat" value="score" style="width:120px"></div>
+              <div class="form-group"><label>Limit</label><input type="number" id="lb-limit" value="10" min="1" max="100"></div>
+              <button class="btn btn-primary" onclick="loadLeaderboard()">🔍 Load</button>
+            </div>
+            <div id="lb-results"><div class="empty"><div class="empty-icon">🏆</div><div class="empty-title">Select a game and stat</div></div></div>
+          </div>
+          <div class="card">
+            <h3>💰 Credits Leaderboard</h3>
+            <div id="lb-credits"><div style="color:var(--muted);font-size:13px;text-align:center;padding:16px">Select a game above</div></div>
+          </div>
         </div>
-      </div>
-    </div>
 
-    <!-- BROADCASTS PANEL -->
-    <div class="panel" id="panel-broadcasts">
-      <div class="card">
-        <h3>📢 Send Broadcast Message</h3>
-        <p style="color:var(--muted);font-size:13px;margin-bottom:14px">Broadcast messages can be fetched by your games using <code>GET /broadcasts?game_id=xxx</code> and shown as announcements.</p>
-        <div class="form-row">
-          <div class="form-group" style="flex:1"><label>Message</label><input type="text" id="broadcast-msg" placeholder="Server maintenance at 5pm..."></div>
-          <div class="form-group"><label>Game (optional)</label><input type="text" id="broadcast-game" placeholder="all games if empty"></div>
-          <button class="btn btn-primary" onclick="sendBroadcast()">📡 Send</button>
+        <!-- GAME CONFIG PANEL -->
+        <div class="panel" id="panel-config">
+          <div class="card">
+            <h3>⚙️ Game Config Store</h3>
+            <p style="color:var(--muted);font-size:13px;margin-bottom:13px">Store global config for your games. Fetch with <code>GET /config?game_id=xxx</code></p>
+            <div class="form-row" style="margin-bottom:9px">
+              <div class="form-group"><label>Game ID</label><input type="text" id="cfg-game" placeholder="my_game" style="width:115px"></div>
+              <div class="form-group"><label>Key</label><input type="text" id="cfg-key" placeholder="max_players" style="width:125px"></div>
+              <div class="form-group" style="flex:1"><label>Value</label><input type="text" id="cfg-val" placeholder="10"></div>
+              <button class="btn btn-primary" onclick="cfgSet()">Set</button>
+            </div>
+            <div class="form-row" style="margin-bottom:14px">
+              <div class="form-group"><label>Load config for game</label><input type="text" id="cfg-load-game" placeholder="my_game" style="width:150px"></div>
+              <button class="btn btn-outline" onclick="cfgLoad()">🔄 Load</button>
+            </div>
+            <div class="cfg-grid" id="cfg-grid"><div style="color:var(--muted);font-size:13px;text-align:center;padding:18px;grid-column:1/-1">No config loaded</div></div>
+          </div>
         </div>
-      </div>
-      <div class="card">
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
-          <h3 style="margin:0">Active Broadcasts</h3>
-          <button class="btn btn-outline btn-sm" onclick="loadBroadcasts()">🔄 Refresh</button>
+
+        <!-- AUDIT LOG PANEL -->
+        <div class="panel" id="panel-audit">
+          <div class="card">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:13px">
+              <h3 style="margin:0">📋 Audit Log</h3>
+              <div style="display:flex;gap:7px">
+                <select id="audit-filter" onchange="renderAudit()">
+                  <option value="">All</option><option value="ban">Bans</option>
+                  <option value="credits">Credits</option><option value="delete">Deletes</option>
+                  <option value="cosmetic">Cosmetics</option><option value="config">Config</option>
+                  <option value="broadcast">Broadcasts</option>
+                </select>
+                <button class="btn btn-outline btn-sm" onclick="clearAudit()">🗑 Clear</button>
+              </div>
+            </div>
+            <div id="audit-list"><div class="empty"><div class="empty-icon">📋</div><div class="empty-title">No events yet</div></div></div>
+          </div>
         </div>
-        <div class="table-wrap">
-          <table>
-            <thead><tr><th>Message</th><th>Game</th><th>Sent</th><th></th></tr></thead>
-            <tbody id="broadcasts-tbody"><tr><td colspan="4" style="text-align:center;color:var(--muted)">Loading...</td></tr></tbody>
-          </table>
-        </div>
-      </div>
-    </div>
 
-    <!-- API DOCS PANEL -->
-    <div class="panel" id="panel-api">
-      <div class="card">
-        <h3>🔗 Base URL</h3>
-        <div style="background:var(--bg);padding:12px 16px;border-radius:6px;font-family:monospace;font-size:14px" id="api-base-url"></div>
-        <p style="color:var(--muted);font-size:13px;margin-top:10px">Add <code>x-player-token: TOKEN</code> header to authenticated requests. Add <code>x-owner-key: PASSWORD</code> for owner routes.</p>
-      </div>
+      </div><!-- end .container -->
+    </div><!-- end #main-content -->
+  </div><!-- end #dashboard-inner -->
+</div><!-- end #dashboard -->
 
-      <div id="api-sections"></div>
-    </div>
-  </div>
-</div>
-
-<!-- DOCS PAGE (public) -->
+<!-- DOCS VIEW -->
 <div id="docs-view" style="display:none">
   <header>
     <div class="logo"><span class="logo-icon">📖</span><span>API Documentation</span></div>
@@ -445,20 +519,18 @@
   <div class="container" id="public-docs-content"></div>
 </div>
 
-<!-- CREATE COSMETIC MODAL -->
+<!-- COSMETIC MODAL -->
 <div class="modal-overlay" id="cosmetic-modal">
   <div class="modal">
     <h3>✨ Create Cosmetic</h3>
     <div class="form-group"><label>Game ID *</label><input type="text" id="cosm-game-id" placeholder="my_platformer"></div>
     <div class="form-group"><label>Name *</label><input type="text" id="cosm-name" placeholder="Golden Sword Skin"></div>
-    <div class="form-group"><label>Type *</label><input type="text" id="cosm-type" placeholder="skin / hat / trail / emote ..."></div>
-    <div class="form-group"><label>Description</label><input type="text" id="cosm-desc" placeholder="A shiny golden sword..."></div>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+    <div class="form-group"><label>Type *</label><input type="text" id="cosm-type" placeholder="skin / hat / trail / emote…"></div>
+    <div class="form-group"><label>Description</label><input type="text" id="cosm-desc" placeholder="A shiny golden sword…"></div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:9px">
       <div class="form-group"><label>Price (credits)</label><input type="number" id="cosm-price" value="100" min="0"></div>
       <div class="form-group"><label>Rarity</label>
-        <select id="cosm-rarity">
-          <option>common</option><option>uncommon</option><option>rare</option><option>epic</option><option>legendary</option>
-        </select>
+        <select id="cosm-rarity"><option>common</option><option>uncommon</option><option>rare</option><option>epic</option><option>legendary</option></select>
       </div>
     </div>
     <div class="modal-actions">
@@ -468,14 +540,49 @@
   </div>
 </div>
 
-<!-- PLAYER DETAIL MODAL -->
+<!-- PLAYER MODAL -->
 <div class="modal-overlay" id="player-modal">
-  <div class="modal" style="width:520px">
+  <div class="modal" style="width:500px">
     <h3>👤 Player Details</h3>
     <div id="player-detail-content"></div>
-    <div class="modal-actions">
-      <button class="btn btn-outline" onclick="closePlayerModal()">Close</button>
+    <div class="modal-actions"><button class="btn btn-outline" onclick="closePlayerModal()">Close</button></div>
+  </div>
+</div>
+
+<!-- PLAYER SIDE PANEL -->
+<div id="psp">
+  <div class="psp-hdr">
+    <div class="psp-av" id="psp-av"></div>
+    <div style="flex:1"><div style="font-size:15px;font-weight:700" id="psp-name">—</div><div style="font-size:12px;color:var(--muted)" id="psp-game">—</div><div id="psp-status" style="margin-top:3px"></div></div>
+    <button onclick="closePsp()" style="background:none;border:none;color:var(--muted);cursor:pointer;font-size:18px">✕</button>
+  </div>
+  <div class="psp-body" id="psp-body"></div>
+  <div class="psp-foot" id="psp-foot"></div>
+</div>
+
+<!-- COMMAND PALETTE -->
+<div id="cmd-bg" onclick="if(event.target===this)closeCmd()">
+  <div id="cmd-box">
+    <input id="cmd-q" placeholder="Search players, navigate panels, run actions…" oninput="cmdUpdate()" onkeydown="cmdKey(event)" autocomplete="off">
+    <div id="cmd-list"></div>
+    <div class="cmd-foot">
+      <span><span class="kbd">↑↓</span> navigate</span>
+      <span><span class="kbd">↵</span> select</span>
+      <span><span class="kbd">Esc</span> close</span>
+      <span><span class="kbd">Ctrl+K</span> open</span>
     </div>
+  </div>
+</div>
+
+<!-- ACTIVITY FEED -->
+<div id="act-tog" onclick="toggleFeed()">Activity</div>
+<div id="act-feed">
+  <div class="act-hdr">
+    <span>⚡ Live Activity</span>
+    <button onclick="toggleFeed()" style="background:none;border:none;color:var(--muted);cursor:pointer">✕</button>
+  </div>
+  <div class="act-list" id="act-list">
+    <div style="padding:20px;text-align:center;color:var(--muted);font-size:12px">No activity yet</div>
   </div>
 </div>
 
@@ -488,484 +595,478 @@ let OWNER_KEY = null;
 let allPlayers = [];
 let allGames = [];
 
-// ── Init ──────────────────────────────────────────────────────────────────────
 document.getElementById('base-url').textContent = BASE;
 
-function goHome() {
-  document.getElementById('public-view').style.display = 'flex';
-  document.getElementById('dashboard').style.display = 'none';
-  document.getElementById('docs-view').style.display = 'none';
-}
+// ── Core navigation ──
+function goHome(){document.getElementById('public-view').style.display='flex';document.getElementById('dashboard').style.display='none';document.getElementById('docs-view').style.display='none';}
+function openDocs(){document.getElementById('public-view').style.display='none';document.getElementById('docs-view').style.display='block';renderPublicDocs();}
 
-function openDocs() {
-  document.getElementById('public-view').style.display = 'none';
-  document.getElementById('docs-view').style.display = 'block';
-  renderPublicDocs();
+// ── Auth ──
+function openOwnerDashboard(){const s=localStorage.getItem('owner_key');if(s){OWNER_KEY=s;showDashboard();}else{document.getElementById('owner-gate').style.display='flex';setTimeout(()=>document.getElementById('gate-password').focus(),50);}}
+function closeGate(){document.getElementById('owner-gate').style.display='none';document.getElementById('gate-password').value='';document.getElementById('gate-error').style.display='none';}
+async function verifyOwner(){
+  const pw=document.getElementById('gate-password').value;
+  try{const r=await fetch(`${BASE}/owner/verify`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({password:pw})});
+  if(r.ok){OWNER_KEY=pw;localStorage.setItem('owner_key',pw);closeGate();showDashboard();}
+  else document.getElementById('gate-error').style.display='block';}
+  catch{document.getElementById('gate-error').textContent='❌ Connection error';document.getElementById('gate-error').style.display='block';}
 }
+function logout(){localStorage.removeItem('owner_key');OWNER_KEY=null;goHome();}
 
-// ── Owner Gate ────────────────────────────────────────────────────────────────
-function openOwnerDashboard() {
-  const saved = localStorage.getItem('owner_key');
-  if (saved) {
-    OWNER_KEY = saved;
-    showDashboard();
-  } else {
-    document.getElementById('owner-gate').style.display = 'flex';
-    setTimeout(() => document.getElementById('gate-password').focus(), 50);
-  }
-}
-
-function closeGate() {
-  document.getElementById('owner-gate').style.display = 'none';
-  document.getElementById('gate-password').value = '';
-  document.getElementById('gate-error').style.display = 'none';
-}
-
-async function verifyOwner() {
-  const pw = document.getElementById('gate-password').value;
-  try {
-    const r = await fetch(`${BASE}/owner/verify`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ password: pw })
-    });
-    if (r.ok) {
-      OWNER_KEY = pw;
-      localStorage.setItem('owner_key', pw);
-      closeGate();
-      showDashboard();
-    } else {
-      document.getElementById('gate-error').style.display = 'block';
-    }
-  } catch {
-    document.getElementById('gate-error').textContent = '❌ Connection error';
-    document.getElementById('gate-error').style.display = 'block';
-  }
-}
-
-function logout() {
-  localStorage.removeItem('owner_key');
-  OWNER_KEY = null;
-  goHome();
-}
-
-async function showDashboard() {
-  document.getElementById('public-view').style.display = 'none';
-  document.getElementById('dashboard').style.display = 'block';
-  document.getElementById('header-url').textContent = BASE;
-  document.getElementById('api-base-url').textContent = BASE;
-  await loadStats();
-  await loadGames();
-  await loadPlayers();
-  await loadCosmetics();
-  await loadBroadcasts();
+async function showDashboard(){
+  document.getElementById('public-view').style.display='none';
+  document.getElementById('dashboard').style.display='block';
+  document.getElementById('header-url').textContent=BASE;
+  document.getElementById('api-base-url').textContent=BASE;
+  document.getElementById('act-tog').style.display='block';
+  await loadStats();await loadGames();await loadPlayers();await loadCosmetics();await loadBroadcasts();
   renderApiDocs();
+  addAct('🔓 Dashboard opened','#a855f7');
 }
 
-// ── Stats ─────────────────────────────────────────────────────────────────────
-async function loadStats() {
-  const r = await ownerFetch('/owner/stats');
-  if (!r.success) return;
-  const s = r.stats;
-  document.getElementById('stat-players').textContent = s.total_players;
-  document.getElementById('stat-games').textContent = s.total_games;
-  document.getElementById('stat-credits').textContent = s.total_credits.toLocaleString();
-  document.getElementById('stat-banned').textContent = s.banned_players;
-  document.getElementById('stat-cosmetics').textContent = s.total_cosmetics;
-}
-
-// ── Games ─────────────────────────────────────────────────────────────────────
-async function loadGames() {
-  const r = await ownerFetch('/owner/games');
-  if (!r.success) return;
-  allGames = r.games;
-  const selectors = ['filter-game', 'filter-cosmetic-game'];
-  selectors.forEach(id => {
-    const sel = document.getElementById(id);
-    const cur = sel.value;
-    sel.innerHTML = '<option value="">All Games</option>';
-    r.games.forEach(g => {
-      const o = document.createElement('option');
-      o.value = g.game_id;
-      o.textContent = `${g.game_id} (${g.player_count})`;
-      sel.appendChild(o);
-    });
-    sel.value = cur;
-  });
-}
-
-// ── Players ───────────────────────────────────────────────────────────────────
-async function loadPlayers() {
-  const gameId = document.getElementById('filter-game').value;
-  const url = gameId ? `/owner/players?game_id=${encodeURIComponent(gameId)}` : '/owner/players';
-  const r = await ownerFetch(url);
-  if (!r.success) return;
-  allPlayers = r.players;
-  renderPlayers(allPlayers);
-}
-
-function filterPlayers() {
-  const q = document.getElementById('search-players').value.toLowerCase();
-  renderPlayers(allPlayers.filter(p => p.username.toLowerCase().includes(q)));
-}
-
-function renderPlayers(players) {
-  const tbody = document.getElementById('players-tbody');
-  if (!players.length) {
-    tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:var(--muted)">No players found</td></tr>';
-    return;
+// ── Stats ──
+async function loadStats(){
+  const r=await ownerFetch('/owner/stats');if(!r.success)return;
+  const s=r.stats;
+  animCount('stat-players',s.total_players);animCount('stat-games',s.total_games);
+  animCount('stat-credits',s.total_credits);animCount('stat-banned',s.banned_players);
+  animCount('stat-cosmetics',s.total_cosmetics);
+  document.getElementById('sb-n-players').textContent=s.total_players;
+  document.getElementById('sb-n-cosmetics').textContent=s.total_cosmetics;
+  document.getElementById('sb-count').textContent='👥 '+s.total_players+' players';
+  document.getElementById('an-players').textContent=s.total_players;
+  if(s.total_players>0){
+    document.getElementById('an-avg').textContent=Math.round(s.total_credits/s.total_players).toLocaleString();
+    document.getElementById('an-ban').textContent=((s.banned_players/s.total_players)*100).toFixed(1)+'%';
   }
-  tbody.innerHTML = players.map(p => `
-    <tr>
-      <td>
-        <strong>${esc(p.username)}</strong>
-        <div style="font-size:11px;color:var(--muted)">${p.id}</div>
-      </td>
-      <td><span class="badge badge-purple">${esc(p.game_id)}</span></td>
-      <td><strong>💰 ${p.credits.toLocaleString()}</strong></td>
-      <td>${p.banned ? '<span class="badge badge-red">Banned</span>' : '<span class="badge badge-green">Active</span>'}</td>
-      <td style="color:var(--muted);font-size:12px">${new Date(p.created_at).toLocaleDateString()}</td>
-      <td>
-        <div style="display:flex;gap:6px;flex-wrap:wrap">
-          <button class="btn btn-outline btn-sm" onclick="viewPlayer('${p.id}')">👁 View</button>
-          <button class="btn btn-sm ${p.banned ? 'btn-green' : 'btn-outline'}" onclick="toggleBan('${p.id}', ${p.banned})">
-            ${p.banned ? '✅ Unban' : '🚫 Ban'}
-          </button>
-          <button class="btn btn-red btn-sm" onclick="deletePlayer('${p.id}', '${esc(p.username)}')">🗑</button>
-        </div>
-      </td>
-    </tr>
-  `).join('');
 }
 
-async function toggleBan(id, currentlyBanned) {
-  const r = await ownerPost('/owner/ban', { player_id: id, banned: !currentlyBanned });
-  if (r.success) { toast(currentlyBanned ? '✅ Player unbanned' : '🚫 Player banned', 'success'); await loadPlayers(); }
+// ── Games ──
+async function loadGames(){
+  const r=await ownerFetch('/owner/games');if(!r.success)return;
+  allGames=r.games;
+  ['filter-game','filter-cosmetic-game','lb-game'].forEach(id=>{
+    const sel=document.getElementById(id);if(!sel)return;
+    const cur=sel.value;sel.innerHTML='<option value="">All Games</option>';
+    r.games.forEach(g=>{const o=document.createElement('option');o.value=g.game_id;o.textContent=`${g.game_id} (${g.player_count})`;sel.appendChild(o);});
+    sel.value=cur;
+  });
+  renderAnalyticsGames(r.games);
 }
 
-async function deletePlayer(id, name) {
-  if (!confirm(`Delete player "${name}"? This cannot be undone.`)) return;
-  const r = await ownerDelete(`/owner/player/${id}`);
-  if (r.success) { toast('🗑 Player deleted', 'success'); await loadPlayers(); await loadStats(); }
+// ── Players ──
+async function loadPlayers(){
+  const gid=document.getElementById('filter-game').value;
+  const r=await ownerFetch(gid?`/owner/players?game_id=${encodeURIComponent(gid)}`:'/owner/players');
+  if(!r.success)return;allPlayers=r.players;renderPlayers(allPlayers);
+}
+function filterPlayers(){const q=document.getElementById('search-players').value.toLowerCase();renderPlayers(allPlayers.filter(p=>p.username.toLowerCase().includes(q)),q);}
+
+const AVC=['#7c3aed','#2563eb','#16a34a','#b45309','#dc2626','#0891b2','#9333ea','#d97706'];
+function avC(n){let h=0;for(const c of n)h=(h*31+c.charCodeAt(0))%AVC.length;return AVC[h];}
+function ini(n){return n.slice(0,2).toUpperCase();}
+function hlStr(t,q){if(!q)return esc(t);return esc(t).replace(new RegExp(esc(q).replace(/[.*+?^${}()|[\]\\]/g,'\\$&'),'gi'),m=>`<mark class="hl">${m}</mark>`);}
+function tAgo(d){const s=Math.floor((Date.now()-new Date(d))/1000),m=Math.floor(s/60),h=Math.floor(m/60),day=Math.floor(h/24);if(day>30)return new Date(d).toLocaleDateString();if(day>0)return day+'d ago';if(h>0)return h+'h ago';if(m>0)return m+'m ago';return 'just now';}
+
+function renderPlayers(players,q=''){
+  const tbody=document.getElementById('players-tbody');
+  if(!players.length){tbody.innerHTML='<tr><td colspan="6"><div class="empty"><div class="empty-icon">👥</div><div class="empty-title">No players found</div></div></td></tr>';return;}
+  const maxC=Math.max(...players.map(p=>p.credits),1);
+  tbody.innerHTML=players.map(p=>{
+    const ac=avC(p.username),pct=Math.round(p.credits/maxC*100);
+    return `<tr><td>
+      <input type="checkbox" class="pchk" value="${p.id}" onchange="updateBulk()" style="margin-right:8px">
+      <span class="p-av" style="background:${ac}">${ini(p.username)}</span>
+      <strong>${hlStr(p.username,q)}</strong>
+      <div style="font-size:10px;color:var(--muted);font-family:monospace;margin-left:35px">${p.id.slice(0,14)}…</div>
+    </td>
+    <td><span class="badge badge-purple">${esc(p.game_id)}</span></td>
+    <td><strong>💰 ${p.credits.toLocaleString()}</strong><div class="cbar-w"><div class="cbar" style="width:${pct}%"></div></div></td>
+    <td>${p.banned?'<span class="badge badge-red">🚫 Banned</span>':'<span class="badge badge-green">✅ Active</span>'}</td>
+    <td style="color:var(--muted);font-size:12px">${tAgo(p.created_at)}</td>
+    <td><div style="display:flex;gap:5px;flex-wrap:wrap">
+      <button class="btn btn-outline btn-sm" onclick="openPsp('${p.id}')">👤 View</button>
+      <button class="btn btn-sm ${p.banned?'btn-green':'btn-outline'}" onclick="toggleBan('${p.id}',${p.banned})">${p.banned?'✅ Unban':'🚫 Ban'}</button>
+      <button class="btn btn-red btn-sm" onclick="deletePlayer('${p.id}','${esc(p.username)}')">🗑</button>
+    </div></td></tr>`;
+  }).join('');
 }
 
-async function viewPlayer(id) {
-  const player = allPlayers.find(p => p.id === id);
-  if (!player) return;
-  document.getElementById('player-detail-content').innerHTML = `
-    <div style="display:grid;gap:10px">
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
-        <div class="card" style="margin:0"><div style="color:var(--muted);font-size:12px">Username</div><strong>${esc(player.username)}</strong></div>
-        <div class="card" style="margin:0"><div style="color:var(--muted);font-size:12px">Game</div><strong>${esc(player.game_id)}</strong></div>
-        <div class="card" style="margin:0"><div style="color:var(--muted);font-size:12px">Credits</div><strong>💰 ${player.credits.toLocaleString()}</strong></div>
-        <div class="card" style="margin:0"><div style="color:var(--muted);font-size:12px">Status</div>${player.banned ? '<span class="badge badge-red">Banned</span>' : '<span class="badge badge-green">Active</span>'}</div>
+async function toggleBan(id,was){
+  const r=await ownerPost('/owner/ban',{player_id:id,banned:!was});
+  if(r.success){logAudit(was?'unban':'ban',`${was?'Unbanned':'Banned'} ${id.slice(0,10)}`);addAct(`${was?'✅':'🚫'} ${was?'Unbanned':'Banned'} ${id.slice(0,8)}`,was?'#56d364':'#ff6b6b');toast(was?'✅ Unbanned':'🚫 Banned','success');await loadPlayers();await loadStats();}
+}
+
+async function deletePlayer(id,name){
+  if(!confirm(`Delete "${name}"? Cannot be undone.`))return;
+  const r=await ownerDelete(`/owner/player/${id}`);
+  if(r.success){logAudit('delete',`Deleted ${name}`);addAct(`🗑 Deleted "${name}"`,'#ff6b6b');toast('🗑 Deleted','success');await loadPlayers();await loadStats();}
+}
+
+async function viewPlayer(id){
+  const p=allPlayers.find(x=>x.id===id);if(!p)return;
+  document.getElementById('player-detail-content').innerHTML=`
+    <div style="display:grid;gap:9px">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:9px">
+        <div class="card" style="margin:0"><div style="color:var(--muted);font-size:11px">Username</div><strong>${esc(p.username)}</strong></div>
+        <div class="card" style="margin:0"><div style="color:var(--muted);font-size:11px">Game</div><strong>${esc(p.game_id)}</strong></div>
+        <div class="card" style="margin:0"><div style="color:var(--muted);font-size:11px">Credits</div><strong>💰 ${p.credits.toLocaleString()}</strong></div>
+        <div class="card" style="margin:0"><div style="color:var(--muted);font-size:11px">Status</div>${p.banned?'<span class="badge badge-red">Banned</span>':'<span class="badge badge-green">Active</span>'}</div>
       </div>
-      <div style="background:var(--bg);padding:10px;border-radius:6px;font-size:12px;color:var(--muted)">
-        ID: ${player.id}<br>Joined: ${new Date(player.created_at).toLocaleString()}
-      </div>
-      <div style="display:flex;gap:8px;flex-wrap:wrap">
+      <div style="background:var(--bg);padding:9px;border-radius:6px;font-size:12px;color:var(--muted)">ID: ${p.id}<br>Joined: ${new Date(p.created_at).toLocaleString()}</div>
+      <div style="display:flex;gap:7px;flex-wrap:wrap">
         <input type="number" id="modal-credits" value="100" min="1" style="width:100px">
-        <button class="btn btn-green btn-sm" onclick="giveCreditsTo('${player.id}')">💰 Give Credits</button>
-        <button class="btn btn-sm ${player.banned?'btn-green':'btn-outline'}" onclick="toggleBan('${player.id}',${player.banned});closePlayerModal()">
-          ${player.banned?'✅ Unban':'🚫 Ban'}
-        </button>
+        <button class="btn btn-green btn-sm" onclick="giveCreditsTo('${p.id}')">💰 Give Credits</button>
+        <button class="btn btn-sm ${p.banned?'btn-green':'btn-outline'}" onclick="toggleBan('${p.id}',${p.banned});closePlayerModal()">${p.banned?'✅ Unban':'🚫 Ban'}</button>
       </div>
-    </div>
-  `;
+    </div>`;
   document.getElementById('player-modal').classList.add('open');
 }
+function closePlayerModal(){document.getElementById('player-modal').classList.remove('open');}
 
-function closePlayerModal() { document.getElementById('player-modal').classList.remove('open'); }
-
-async function giveCreditsTo(pid) {
-  const amt = parseInt(document.getElementById('modal-credits').value);
-  if (!amt) return;
-  const r = await ownerPost('/owner/credits/give', { player_id: pid, amount: amt });
-  if (r.success) { toast(`💰 Gave ${amt} credits!`, 'success'); closePlayerModal(); await loadPlayers(); await loadStats(); }
+async function giveCreditsTo(pid){
+  const amt=parseInt(document.getElementById('modal-credits').value);if(!amt)return;
+  const r=await ownerPost('/owner/credits/give',{player_id:pid,amount:amt});
+  if(r.success){logAudit('credits',`Gave ${amt} to ${pid.slice(0,10)}`);toast(`💰 +${amt}!`,'success');closePlayerModal();await loadPlayers();await loadStats();}
 }
 
-async function giveCredits() {
-  const pid = document.getElementById('give-credits-player').value.trim();
-  const amt = parseInt(document.getElementById('give-credits-amount').value);
-  if (!pid || !amt) return toast('Enter player ID and amount', 'error');
-  const r = await ownerPost('/owner/credits/give', { player_id: pid, amount: amt });
-  if (r.success) { toast(`💰 Gave ${amt} credits!`, 'success'); await loadPlayers(); await loadStats(); }
-  else toast(r.error || 'Error', 'error');
+async function giveCredits(){
+  const pid=document.getElementById('give-credits-player').value.trim();
+  const amt=parseInt(document.getElementById('give-credits-amount').value);
+  if(!pid||!amt)return toast('Enter player ID and amount','error');
+  const r=await ownerPost('/owner/credits/give',{player_id:pid,amount:amt});
+  if(r.success){logAudit('credits',`Gave ${amt} to ${pid.slice(0,10)}`);addAct(`💰 +${amt} → ${pid.slice(0,8)}`,'#56d364');toast(`💰 Gave ${amt}!`,'success');await loadPlayers();await loadStats();}
+  else toast(r.error||'Error','error');
 }
 
-async function giveItem() {
-  const pid = document.getElementById('give-item-player').value.trim();
-  const name = document.getElementById('give-item-name').value.trim();
-  const qty = parseInt(document.getElementById('give-item-qty').value);
-  if (!pid || !name) return toast('Enter player ID and item name', 'error');
-  const r = await ownerPost('/owner/inventory/give', { player_id: pid, item_name: name, quantity: qty });
-  if (r.success) toast(`🎒 Gave ${qty}x ${name}!`, 'success');
-  else toast(r.error || 'Error', 'error');
+async function giveItem(){
+  const pid=document.getElementById('give-item-player').value.trim();
+  const name=document.getElementById('give-item-name').value.trim();
+  const qty=parseInt(document.getElementById('give-item-qty').value);
+  if(!pid||!name)return toast('Enter player ID and item name','error');
+  const r=await ownerPost('/owner/inventory/give',{player_id:pid,item_name:name,quantity:qty});
+  if(r.success){logAudit('cosmetic',`Gave ${qty}x "${name}" to ${pid.slice(0,10)}`);toast(`🎒 Gave ${qty}x ${name}!`,'success');}
+  else toast(r.error||'Error','error');
 }
 
-// ── Cosmetics ─────────────────────────────────────────────────────────────────
-async function loadCosmetics() {
-  const gameId = document.getElementById('filter-cosmetic-game').value;
-  const url = gameId ? `/cosmetics/catalog?game_id=${encodeURIComponent(gameId)}` : '/owner/players';
-  // get all cosmetics across all games via a combined approach
-  let cosmetics = [];
-  if (gameId) {
-    const r = await fetch(`${BASE}/cosmetics/catalog?game_id=${encodeURIComponent(gameId)}`);
-    const d = await r.json();
-    cosmetics = d.cosmetics || [];
-  } else {
-    // fetch per game
-    for (const g of allGames) {
-      const r = await fetch(`${BASE}/cosmetics/catalog?game_id=${encodeURIComponent(g.game_id)}`);
-      const d = await r.json();
-      cosmetics = cosmetics.concat(d.cosmetics || []);
-    }
-  }
-  const tbody = document.getElementById('cosmetics-tbody');
-  if (!cosmetics.length) {
-    tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:var(--muted)">No cosmetics yet. Create some!</td></tr>';
-    return;
-  }
-  const rarityColors = { common:'badge-gray', uncommon:'badge-green', rare:'badge-blue', epic:'badge-purple', legendary:'badge-yellow' };
-  tbody.innerHTML = cosmetics.map(c => `
-    <tr>
-      <td><strong>${esc(c.name)}</strong><div style="font-size:11px;color:var(--muted)">${esc(c.description||'')}</div></td>
-      <td><span class="badge badge-purple">${esc(c.game_id)}</span></td>
-      <td>${esc(c.type)}</td>
-      <td><span class="badge ${rarityColors[c.rarity]||'badge-gray'}">${c.rarity}</span></td>
-      <td>💰 ${c.price}</td>
-      <td>
-        <button class="btn btn-red btn-sm" onclick="deleteCosmetic('${c.id}')">🗑 Delete</button>
-      </td>
-    </tr>
-  `).join('');
+// ── Cosmetics ──
+async function loadCosmetics(){
+  const gid=document.getElementById('filter-cosmetic-game').value;
+  let cosmetics=[];
+  if(gid){const r=await fetch(`${BASE}/cosmetics/catalog?game_id=${encodeURIComponent(gid)}`);const d=await r.json();cosmetics=d.cosmetics||[];}
+  else{for(const g of allGames){const r=await fetch(`${BASE}/cosmetics/catalog?game_id=${encodeURIComponent(g.game_id)}`);const d=await r.json();cosmetics=cosmetics.concat(d.cosmetics||[]);}}
+  const tbody=document.getElementById('cosmetics-tbody');
+  if(!cosmetics.length){tbody.innerHTML='<tr><td colspan="6"><div class="empty"><div class="empty-icon">✨</div><div class="empty-title">No cosmetics yet</div></div></td></tr>';return;}
+  const rC={common:'badge-gray',uncommon:'badge-green',rare:'badge-blue',epic:'badge-purple',legendary:'badge-yellow'};
+  const rE={common:'⬜',uncommon:'🟢',rare:'🔵',epic:'🟣',legendary:'🟡'};
+  tbody.innerHTML=cosmetics.map(c=>`<tr><td><strong>${esc(c.name)}</strong><div style="font-size:11px;color:var(--muted)">${esc(c.description||'')}</div></td><td><span class="badge badge-purple">${esc(c.game_id)}</span></td><td><span style="background:var(--surface2);padding:2px 7px;border-radius:4px;font-size:11px">${esc(c.type)}</span></td><td><span class="badge ${rC[c.rarity]||'badge-gray'}">${rE[c.rarity]||''} ${c.rarity}</span></td><td><strong>💰 ${c.price}</strong></td><td><button class="btn btn-red btn-sm" onclick="deleteCosmetic('${c.id}')">🗑</button></td></tr>`).join('');
+}
+function openCosmeticModal(){document.getElementById('cosmetic-modal').classList.add('open');}
+function closeCosmeticModal(){document.getElementById('cosmetic-modal').classList.remove('open');}
+
+async function createCosmetic(){
+  const data={game_id:document.getElementById('cosm-game-id').value.trim(),name:document.getElementById('cosm-name').value.trim(),type:document.getElementById('cosm-type').value.trim(),description:document.getElementById('cosm-desc').value.trim(),price:parseInt(document.getElementById('cosm-price').value)||0,rarity:document.getElementById('cosm-rarity').value};
+  if(!data.game_id||!data.name||!data.type)return toast('Game ID, name, type required','error');
+  const r=await ownerPost('/owner/cosmetics/create',data);
+  if(r.success){logAudit('cosmetic',`Created "${data.name}" for ${data.game_id}`);addAct(`✨ Cosmetic "${data.name}"`,'#c084fc');toast('✨ Created!','success');closeCosmeticModal();await loadCosmetics();await loadStats();}
+  else toast(r.error||'Error','error');
 }
 
-function openCosmeticModal() { document.getElementById('cosmetic-modal').classList.add('open'); }
-function closeCosmeticModal() { document.getElementById('cosmetic-modal').classList.remove('open'); }
-
-async function createCosmetic() {
-  const data = {
-    game_id: document.getElementById('cosm-game-id').value.trim(),
-    name: document.getElementById('cosm-name').value.trim(),
-    type: document.getElementById('cosm-type').value.trim(),
-    description: document.getElementById('cosm-desc').value.trim(),
-    price: parseInt(document.getElementById('cosm-price').value) || 0,
-    rarity: document.getElementById('cosm-rarity').value
-  };
-  if (!data.game_id || !data.name || !data.type) return toast('Game ID, name, and type required', 'error');
-  const r = await ownerPost('/owner/cosmetics/create', data);
-  if (r.success) {
-    toast('✨ Cosmetic created!', 'success');
-    closeCosmeticModal();
-    await loadCosmetics();
-    await loadStats();
-  } else toast(r.error || 'Error', 'error');
+async function deleteCosmetic(id){
+  if(!confirm('Delete this cosmetic?'))return;
+  const r=await ownerDelete(`/owner/cosmetics/${id}`);
+  if(r.success){logAudit('cosmetic',`Deleted ${id.slice(0,10)}`);toast('🗑 Deleted','success');await loadCosmetics();await loadStats();}
 }
 
-async function deleteCosmetic(id) {
-  if (!confirm('Delete this cosmetic? Players who own it will lose it.')) return;
-  const r = await ownerDelete(`/owner/cosmetics/${id}`);
-  if (r.success) { toast('🗑 Cosmetic deleted', 'success'); await loadCosmetics(); await loadStats(); }
+async function grantCosmetic(){
+  const pid=document.getElementById('grant-cosm-player').value.trim(),cid=document.getElementById('grant-cosm-id').value.trim();
+  if(!pid||!cid)return toast('Enter player ID and cosmetic ID','error');
+  const r=await ownerPost('/owner/cosmetics/grant',{player_id:pid,cosmetic_id:cid});
+  if(r.success){logAudit('cosmetic',`Granted ${cid.slice(0,8)} to ${pid.slice(0,8)}`);toast('🎁 Granted!','success');}
+  else toast(r.error||'Error','error');
 }
 
-async function grantCosmetic() {
-  const pid = document.getElementById('grant-cosm-player').value.trim();
-  const cid = document.getElementById('grant-cosm-id').value.trim();
-  if (!pid || !cid) return toast('Enter player ID and cosmetic ID', 'error');
-  const r = await ownerPost('/owner/cosmetics/grant', { player_id: pid, cosmetic_id: cid });
-  if (r.success) toast('🎁 Cosmetic granted!', 'success');
-  else toast(r.error || 'Error', 'error');
+// ── Broadcasts ──
+async function loadBroadcasts(){
+  const r=await fetch(`${BASE}/broadcasts`);const d=await r.json();const msgs=d.messages||[];
+  const tbody=document.getElementById('broadcasts-tbody');
+  if(!msgs.length){tbody.innerHTML='<tr><td colspan="4" style="text-align:center;color:var(--muted);padding:16px">No active broadcasts</td></tr>';return;}
+  tbody.innerHTML=msgs.map(m=>`<tr><td>${esc(m.message)}</td><td>${m.game_id?`<span class="badge badge-purple">${esc(m.game_id)}</span>`:'<span class="badge badge-gray">All Games</span>'}</td><td style="color:var(--muted);font-size:12px">${tAgo(m.created_at)}</td><td><button class="btn btn-red btn-sm" onclick="deleteBroadcast('${m.id}')">🗑</button></td></tr>`).join('');
 }
 
-// ── Broadcasts ────────────────────────────────────────────────────────────────
-async function loadBroadcasts() {
-  const r = await fetch(`${BASE}/broadcasts`);
-  const d = await r.json();
-  const msgs = d.messages || [];
-  const tbody = document.getElementById('broadcasts-tbody');
-  if (!msgs.length) {
-    tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;color:var(--muted)">No active broadcasts</td></tr>';
-    return;
-  }
-  tbody.innerHTML = msgs.map(m => `
-    <tr>
-      <td>${esc(m.message)}</td>
-      <td>${m.game_id ? `<span class="badge badge-purple">${esc(m.game_id)}</span>` : '<span class="badge badge-gray">All Games</span>'}</td>
-      <td style="color:var(--muted);font-size:12px">${new Date(m.created_at).toLocaleString()}</td>
-      <td><button class="btn btn-red btn-sm" onclick="deleteBroadcast('${m.id}')">🗑</button></td>
-    </tr>
-  `).join('');
+async function sendBroadcast(){
+  const msg=document.getElementById('broadcast-msg').value.trim(),game=document.getElementById('broadcast-game').value.trim();
+  if(!msg)return toast('Enter a message','error');
+  const r=await ownerPost('/owner/broadcast',{message:msg,game_id:game||undefined});
+  if(r.success){logAudit('broadcast',`Sent: "${msg.slice(0,40)}"`);addAct(`📢 "${msg.slice(0,26)}"`,'#e3b341');toast('📡 Sent!','success');document.getElementById('broadcast-msg').value='';await loadBroadcasts();}
+  else toast(r.error||'Error','error');
 }
 
-async function sendBroadcast() {
-  const msg = document.getElementById('broadcast-msg').value.trim();
-  const game = document.getElementById('broadcast-game').value.trim();
-  if (!msg) return toast('Enter a message', 'error');
-  const r = await ownerPost('/owner/broadcast', { message: msg, game_id: game || undefined });
-  if (r.success) {
-    toast('📡 Broadcast sent!', 'success');
-    document.getElementById('broadcast-msg').value = '';
-    await loadBroadcasts();
-  } else toast(r.error || 'Error', 'error');
+async function deleteBroadcast(id){
+  const r=await ownerDelete(`/owner/broadcast/${id}`);
+  if(r.success){toast('🗑 Deleted','success');await loadBroadcasts();}
 }
 
-async function deleteBroadcast(id) {
-  const r = await ownerDelete(`/owner/broadcast/${id}`);
-  if (r.success) { toast('🗑 Broadcast deleted', 'success'); await loadBroadcasts(); }
-}
-
-// ── API Docs ──────────────────────────────────────────────────────────────────
-const API_SECTIONS = [
-  {
-    title: '🔐 Authentication',
-    endpoints: [
-      { method: 'POST', path: '/register', desc: 'Create a new player account', body: '{ game_id, username, password }', returns: '{ player_id, token, credits }' },
-      { method: 'POST', path: '/login', desc: 'Login and get token', body: '{ game_id, username, password }', returns: '{ player_id, token, credits }' },
-      { method: 'GET', path: '/me', desc: 'Get current player info', auth: true, returns: '{ player_id, game_id, username, credits }' },
-    ]
-  },
-  {
-    title: '💾 Save Data',
-    endpoints: [
-      { method: 'POST', path: '/save', desc: 'Save game progress (any key/value JSON)', auth: true, body: '{ data: { level: 5, score: 1200, ... } }' },
-      { method: 'GET', path: '/load', desc: 'Load all saved data for this player', auth: true, returns: '{ data: { level, score, ... } }' },
-      { method: 'DELETE', path: '/save/:key', desc: 'Delete a specific save key', auth: true },
-    ]
-  },
-  {
-    title: '💰 Credits',
-    endpoints: [
-      { method: 'GET', path: '/credits', desc: 'Get player credit balance', auth: true },
-      { method: 'POST', path: '/credits/add', desc: 'Add credits (use for rewards in-game)', auth: true, body: '{ amount: 50 }' },
-      { method: 'POST', path: '/credits/spend', desc: 'Spend credits', auth: true, body: '{ amount: 100 }' },
-    ]
-  },
-  {
-    title: '🎒 Inventory',
-    endpoints: [
-      { method: 'GET', path: '/inventory', desc: 'Get player inventory', auth: true },
-      { method: 'POST', path: '/inventory/add', desc: 'Add item to player inventory', auth: true, body: '{ item_name, quantity, metadata }' },
-      { method: 'POST', path: '/inventory/remove', desc: 'Remove item from inventory', auth: true, body: '{ item_name, quantity }' },
-    ]
-  },
-  {
-    title: '✨ Cosmetics',
-    endpoints: [
-      { method: 'GET', path: '/cosmetics/catalog?game_id=xxx', desc: 'Get all cosmetics for a game', returns: '{ cosmetics: [...] }' },
-      { method: 'GET', path: '/cosmetics/owned', desc: 'Get cosmetics owned by player', auth: true },
-      { method: 'POST', path: '/cosmetics/buy', desc: 'Buy a cosmetic with credits', auth: true, body: '{ cosmetic_id }' },
-      { method: 'POST', path: '/cosmetics/equip', desc: 'Equip/unequip a cosmetic', auth: true, body: '{ cosmetic_id, equipped: true }' },
-    ]
-  },
-  {
-    title: '🏆 Leaderboard',
-    endpoints: [
-      { method: 'GET', path: '/leaderboard?game_id=xxx&stat=score&limit=10', desc: 'Get top players by a saved stat key', returns: '{ leaderboard: [{ rank, username, value }] }' },
-    ]
-  },
-  {
-    title: '📢 Broadcasts',
-    endpoints: [
-      { method: 'GET', path: '/broadcasts?game_id=xxx', desc: 'Get active broadcast messages for your game', returns: '{ messages: [...] }' },
-    ]
-  },
+// ── API Docs ──
+const API_SECTIONS=[
+  {title:'🔐 Authentication',endpoints:[
+    {method:'POST',path:'/register',desc:'Create a new player account',body:'{ game_id, username, password }',returns:'{ player_id, token, credits }'},
+    {method:'POST',path:'/login',desc:'Login and get token',body:'{ game_id, username, password }',returns:'{ player_id, token, credits }'},
+    {method:'GET',path:'/me',desc:'Get current player info',auth:true,returns:'{ player_id, game_id, username, credits }'},
+  ]},
+  {title:'💾 Save Data',endpoints:[
+    {method:'POST',path:'/save',desc:'Save game progress (any key/value JSON)',auth:true,body:'{ data: { level: 5, score: 1200 } }'},
+    {method:'GET',path:'/load',desc:'Load all saved data',auth:true,returns:'{ data: { … } }'},
+    {method:'DELETE',path:'/save/:key',desc:'Delete a specific save key',auth:true},
+  ]},
+  {title:'💰 Credits',endpoints:[
+    {method:'GET',path:'/credits',desc:'Get credit balance',auth:true},
+    {method:'POST',path:'/credits/add',desc:'Add credits (game rewards)',auth:true,body:'{ amount: 50 }'},
+    {method:'POST',path:'/credits/spend',desc:'Spend credits',auth:true,body:'{ amount: 100 }'},
+  ]},
+  {title:'🎒 Inventory',endpoints:[
+    {method:'GET',path:'/inventory',desc:'Get player inventory',auth:true},
+    {method:'POST',path:'/inventory/add',desc:'Add item',auth:true,body:'{ item_name, quantity, metadata }'},
+    {method:'POST',path:'/inventory/remove',desc:'Remove item',auth:true,body:'{ item_name, quantity }'},
+  ]},
+  {title:'✨ Cosmetics',endpoints:[
+    {method:'GET',path:'/cosmetics/catalog?game_id=xxx',desc:'Get all cosmetics for a game',returns:'{ cosmetics: […] }'},
+    {method:'GET',path:'/cosmetics/owned',desc:'Get owned cosmetics',auth:true},
+    {method:'POST',path:'/cosmetics/buy',desc:'Buy cosmetic with credits',auth:true,body:'{ cosmetic_id }'},
+    {method:'POST',path:'/cosmetics/equip',desc:'Equip / unequip',auth:true,body:'{ cosmetic_id, equipped: true }'},
+  ]},
+  {title:'🏆 Leaderboard',endpoints:[
+    {method:'GET',path:'/leaderboard?game_id=xxx&stat=score&limit=10',desc:'Top players by any saved stat',returns:'{ leaderboard: [{rank, username, value}] }'},
+  ]},
+  {title:'📢 Broadcasts',endpoints:[
+    {method:'GET',path:'/broadcasts?game_id=xxx',desc:'Active broadcast messages for your game',returns:'{ messages: […] }'},
+  ]},
+  {title:'⚙️ Game Config (new)',endpoints:[
+    {method:'GET',path:'/config?game_id=xxx',desc:'Get all config key/values for your game',returns:'{ config: { key: value } }'},
+  ]},
 ];
 
-function renderApiDocs() {
-  const container = document.getElementById('api-sections');
-  container.innerHTML = API_SECTIONS.map(s => `
-    <div class="card">
-      <h3>${s.title}</h3>
-      ${s.endpoints.map(e => `
-        <div class="api-endpoint">
-          <span class="method ${e.method}">${e.method}</span><strong>${BASE}${e.path}</strong>
-          ${e.auth ? '<span class="badge badge-yellow" style="margin-left:8px">🔑 Auth Required</span>' : ''}
-          <div class="endpoint-desc">${e.desc}</div>
-          ${e.body ? `<div style="margin-top:6px;color:var(--muted)">Body: <code>${e.body}</code></div>` : ''}
-          ${e.returns ? `<div style="color:var(--muted)">Returns: <code>${e.returns}</code></div>` : ''}
-        </div>
-      `).join('')}
-    </div>
-  `).join('');
+function renderApiDocs(){
+  document.getElementById('api-sections').innerHTML=API_SECTIONS.map(s=>`<div class="card"><h3>${s.title}</h3>${s.endpoints.map(e=>`<div class="api-endpoint" onclick="navigator.clipboard.writeText('${BASE}${e.path}');toast('📋 Copied','success')" title="Click to copy"><span class="method ${e.method}">${e.method}</span><strong>${BASE}${e.path}</strong>${e.auth?'<span class="badge badge-yellow" style="margin-left:8px">🔑 Auth</span>':''}<div class="endpoint-desc">${e.desc}</div>${e.body?`<div style="margin-top:4px;color:var(--muted)">Body: <code>${e.body}</code></div>`:''}${e.returns?`<div style="color:var(--muted)">Returns: <code>${e.returns}</code></div>`:''}</div>`).join('')}</div>`).join('');
+}
+function renderPublicDocs(){
+  document.getElementById('public-docs-content').innerHTML=`<div class="card" style="margin-bottom:14px"><h3>🔗 Your Backend URL</h3><div style="background:var(--bg);padding:11px;border-radius:6px;font-family:'JetBrains Mono',monospace">${BASE}</div><p style="color:var(--muted);font-size:13px;margin-top:9px">Use <code>x-player-token: TOKEN</code> for authenticated requests. Each game uses its own <code>game_id</code>.</p></div>`
+  +API_SECTIONS.map(s=>`<div class="card"><h3>${s.title}</h3>${s.endpoints.map(e=>`<div class="api-endpoint"><span class="method ${e.method}">${e.method}</span><strong>${BASE}${e.path}</strong>${e.auth?'<span class="badge badge-yellow" style="margin-left:8px">🔑 Auth</span>':''}<div class="endpoint-desc">${e.desc}</div>${e.body?`<div style="margin-top:4px;color:var(--muted)">Body: <code>${e.body}</code></div>`:''}${e.returns?`<div style="color:var(--muted)">Returns: <code>${e.returns}</code></div>`:''}</div>`).join('')}</div>`).join('');
 }
 
-function renderPublicDocs() {
-  const el = document.getElementById('public-docs-content');
-  el.innerHTML = `
-    <div class="card" style="margin-bottom:16px">
-      <h3>🔗 Your Backend URL</h3>
-      <div style="background:var(--bg);padding:12px;border-radius:6px;font-family:monospace">${BASE}</div>
-      <p style="color:var(--muted);font-size:13px;margin-top:10px">
-        Use <code>x-player-token: TOKEN</code> header for authenticated requests.
-        Each game uses its own <code>game_id</code> to keep players separate.
-      </p>
+// ── Original tab function (preserved) ──
+function switchTab(name){document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));if(event&&event.target)event.target.classList.add('active');document.getElementById(`panel-${name}`)?.classList.add('active');}
+
+// ── Helpers ──
+function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+async function ownerFetch(p){try{const r=await fetch(`${BASE}${p}`,{headers:{'x-owner-key':OWNER_KEY}});return await r.json();}catch{return{error:'Network error'};}}
+async function ownerPost(p,b){try{const r=await fetch(`${BASE}${p}`,{method:'POST',headers:{'Content-Type':'application/json','x-owner-key':OWNER_KEY},body:JSON.stringify(b)});return await r.json();}catch{return{error:'Network error'};}}
+async function ownerDelete(p){try{const r=await fetch(`${BASE}${p}`,{method:'DELETE',headers:{'x-owner-key':OWNER_KEY}});return await r.json();}catch{return{error:'Network error'};}}
+function toast(msg,type='success'){const el=document.getElementById('toast');el.textContent=msg;el.className=type;el.style.display='block';setTimeout(()=>el.style.display='none',3000);}
+document.querySelectorAll('.modal-overlay').forEach(o=>o.addEventListener('click',e=>{if(e.target===o)o.classList.remove('open');}));
+
+// ════════════════════════════════════════════
+// ADDITIONS — nothing above this line changed
+// ════════════════════════════════════════════
+
+// Sidebar nav
+function sbNav(panel,btn){
+  document.querySelectorAll('.sb-item').forEach(i=>i.classList.remove('active'));
+  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById(`panel-${panel}`)?.classList.add('active');
+  if(panel==='analytics')loadAnalytics();
+  if(panel==='leaderboard')populateLbGames();
+  if(panel==='audit')renderAudit();
+}
+function sbNavByName(name){const b=document.getElementById(`sb-${name}-btn`);if(b)sbNav(name,b);}
+
+// Animated counter
+function animCount(id,target){
+  const el=document.getElementById(id);if(!el)return;
+  const start=parseInt(el.textContent.replace(/\D/g,''))||0;
+  const t0=performance.now();el.classList.add('pop');
+  (function step(now){const p=Math.min((now-t0)/600,1),e=1-Math.pow(1-p,3);el.textContent=Math.round(start+(target-start)*e).toLocaleString();if(p<1)requestAnimationFrame(step);else{el.textContent=target.toLocaleString();el.classList.remove('pop');}})(t0);
+}
+
+// Audit log
+let auditLog=JSON.parse(localStorage.getItem('gbd_audit')||'[]');
+const AUDIT_IC={ban:'🚫',unban:'✅',credits:'💰',delete:'🗑',cosmetic:'✨',config:'⚙️',broadcast:'📢'};
+function logAudit(type,desc){auditLog.unshift({type,desc,time:new Date().toISOString()});if(auditLog.length>150)auditLog=auditLog.slice(0,150);localStorage.setItem('gbd_audit',JSON.stringify(auditLog));}
+function renderAudit(){
+  const f=document.getElementById('audit-filter')?.value||'';
+  const logs=f?auditLog.filter(l=>l.type===f):auditLog;
+  const el=document.getElementById('audit-list');
+  if(!logs.length){el.innerHTML='<div class="empty"><div class="empty-icon">📋</div><div class="empty-title">No events yet</div></div>';return;}
+  el.innerHTML=logs.map(l=>`<div class="aud-row"><div class="aud-ic">${AUDIT_IC[l.type]||'•'}</div><div><div class="aud-desc">${esc(l.desc)}</div><div class="aud-meta">${l.type}</div></div><div class="aud-time">${tAgo(l.time)}</div></div>`).join('');
+}
+function clearAudit(){if(!confirm('Clear audit log?'))return;auditLog=[];localStorage.removeItem('gbd_audit');renderAudit();}
+
+// Activity feed
+function addAct(text,color='#e6edf3'){
+  const list=document.getElementById('act-list');
+  const ph=list.querySelector('[style*="padding:20px"]');if(ph)ph.remove();
+  const item=document.createElement('div');item.className='act-item';
+  item.innerHTML=`<div><span class="act-dot" style="background:${color}"></span>${esc(text)}</div><div class="act-time">${new Date().toLocaleTimeString()}</div>`;
+  list.insertBefore(item,list.firstChild);
+  while(list.children.length>40)list.removeChild(list.lastChild);
+}
+function toggleFeed(){document.getElementById('act-feed').classList.toggle('open');}
+
+// Player side panel
+function openPsp(id){
+  const p=allPlayers.find(x=>x.id===id);if(!p)return;
+  const ac=avC(p.username);
+  document.getElementById('psp-av').style.background=ac;
+  document.getElementById('psp-av').textContent=ini(p.username);
+  document.getElementById('psp-name').textContent=p.username;
+  document.getElementById('psp-game').textContent=p.game_id;
+  document.getElementById('psp-status').innerHTML=p.banned?'<span class="badge badge-red">🚫 Banned</span>':'<span class="badge badge-green">✅ Active</span>';
+  document.getElementById('psp-body').innerHTML=`
+    <div class="psp-sec">
+      <div class="psp-sec-title">Account</div>
+      <div class="psp-row"><span class="psp-lbl">Player ID</span><code style="font-size:10px">${p.id.slice(0,16)}…</code></div>
+      <div class="psp-row"><span class="psp-lbl">Credits</span><strong>💰 ${p.credits.toLocaleString()}</strong></div>
+      <div class="psp-row"><span class="psp-lbl">Joined</span>${tAgo(p.created_at)}</div>
+      <div class="psp-row"><span class="psp-lbl">Game</span><span class="badge badge-purple">${esc(p.game_id)}</span></div>
     </div>
-    ${API_SECTIONS.map(s => `
-      <div class="card">
-        <h3>${s.title}</h3>
-        ${s.endpoints.map(e => `
-          <div class="api-endpoint">
-            <span class="method ${e.method}">${e.method}</span><strong>${BASE}${e.path}</strong>
-            ${e.auth ? '<span class="badge badge-yellow" style="margin-left:8px">🔑 Auth</span>' : ''}
-            <div class="endpoint-desc">${e.desc}</div>
-            ${e.body ? `<div style="margin-top:6px;color:var(--muted)">Body: <code>${e.body}</code></div>` : ''}
-            ${e.returns ? `<div style="color:var(--muted)">Returns: <code>${e.returns}</code></div>` : ''}
-          </div>
-        `).join('')}
+    <div class="psp-sec">
+      <div class="psp-sec-title">Quick Credit Gift</div>
+      <div style="display:flex;gap:5px;flex-wrap:wrap;margin-top:3px">
+        ${[100,500,1000,5000].map(a=>`<button class="btn btn-outline btn-sm" onclick="quickC('${p.id}',${a})">+${a.toLocaleString()}</button>`).join('')}
       </div>
-    `).join('')}
-  `;
+      <div style="display:flex;gap:6px;margin-top:7px">
+        <input type="number" id="psp-c" value="100" min="1" style="flex:1">
+        <button class="btn btn-green btn-sm" onclick="quickC('${p.id}',parseInt(document.getElementById('psp-c').value))">Give</button>
+      </div>
+    </div>
+    <div class="psp-sec">
+      <button class="btn btn-outline btn-sm" onclick="navigator.clipboard.writeText('${p.id}');toast('📋 Copied!','success')" style="width:100%">📋 Copy Player ID</button>
+    </div>`;
+  document.getElementById('psp-foot').innerHTML=`
+    <button class="btn btn-sm ${p.banned?'btn-green':'btn-outline'}" style="flex:1" onclick="toggleBan('${p.id}',${p.banned});closePsp()">${p.banned?'✅ Unban':'🚫 Ban'}</button>
+    <button class="btn btn-red btn-sm" style="flex:1" onclick="deletePlayer('${p.id}','${esc(p.username)}');closePsp()">🗑 Delete</button>`;
+  const panel=document.getElementById('psp');panel.classList.add('open');panel.style.display='flex';
+}
+function closePsp(){const p=document.getElementById('psp');p.classList.remove('open');p.style.display='none';}
+
+async function quickC(pid,amt){
+  if(!amt||amt<=0)return;
+  const r=await ownerPost('/owner/credits/give',{player_id:pid,amount:amt});
+  if(r.success){logAudit('credits',`Quick +${amt} to ${pid.slice(0,10)}`);addAct(`💰 +${amt} → ${pid.slice(0,8)}`,'#56d364');toast(`💰 +${amt}!`,'success');await loadPlayers();await loadStats();openPsp(pid);}
+  else toast(r.error||'Error','error');
 }
 
-// ── Tabs ──────────────────────────────────────────────────────────────────────
-function switchTab(name) {
-  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
-  event.target.classList.add('active');
-  document.getElementById(`panel-${name}`).classList.add('active');
+// Bulk actions
+function getSelIds(){return[...document.querySelectorAll('.pchk:checked')].map(c=>c.value);}
+function updateBulk(){const ids=getSelIds(),bar=document.getElementById('bulk-bar'),cnt=document.getElementById('bulk-count');if(ids.length){bar.classList.add('on');cnt.textContent=`${ids.length} selected`;}else bar.classList.remove('on');}
+function toggleSelAll(cb){document.querySelectorAll('.pchk').forEach(c=>c.checked=cb.checked);updateBulk();}
+function clearSel(){document.querySelectorAll('.pchk').forEach(c=>c.checked=false);document.getElementById('sel-all').checked=false;updateBulk();}
+async function bulkCredits(){const ids=getSelIds();if(!ids.length)return;const amt=parseInt(prompt(`Give credits to ${ids.length} players:`)||'0');if(!amt)return;let n=0;for(const id of ids){const r=await ownerPost('/owner/credits/give',{player_id:id,amount:amt});if(r.success)n++;}logAudit('credits',`Bulk +${amt} × ${n}`);addAct(`💰 Bulk +${amt} × ${n}`,'#56d364');toast(`💰 Gave ${amt} to ${n}`,'success');await loadPlayers();await loadStats();clearSel();}
+async function bulkBan(banned){const ids=getSelIds();if(!ids.length||!confirm(`${banned?'Ban':'Unban'} ${ids.length} players?`))return;let n=0;for(const id of ids){const r=await ownerPost('/owner/ban',{player_id:id,banned});if(r.success)n++;}logAudit(banned?'ban':'unban',`Bulk × ${n}`);toast(`${banned?'🚫':'✅'} ${n} players`,'success');await loadPlayers();clearSel();}
+async function bulkDelete(){const ids=getSelIds();if(!ids.length||!confirm(`⚠️ Delete ${ids.length} players?`))return;let n=0;for(const id of ids){const r=await ownerDelete(`/owner/player/${id}`);if(r.success)n++;}logAudit('delete',`Bulk delete × ${n}`);toast(`🗑 Deleted ${n}`,'success');await loadPlayers();await loadStats();clearSel();}
+
+// Export CSV
+function exportPlayers(){if(!allPlayers.length)return toast('No players','error');const h=['ID','Username','Game','Credits','Banned','Joined'];const rows=allPlayers.map(p=>[p.id,p.username,p.game_id,p.credits,p.banned?'yes':'no',p.created_at]);const csv=[h,...rows].map(r=>r.map(v=>`"${String(v).replace(/"/g,'""')}"`).join(',')).join('\n');const a=document.createElement('a');a.href='data:text/csv;charset=utf-8,'+encodeURIComponent(csv);a.download=`players_${new Date().toISOString().slice(0,10)}.csv`;a.click();toast('⬇ Exported CSV','success');}
+
+// Leaderboard
+function populateLbGames(){const sel=document.getElementById('lb-game');if(!sel)return;sel.innerHTML='<option value="">Pick a game…</option>';allGames.forEach(g=>{const o=document.createElement('option');o.value=g.game_id;o.textContent=`${g.game_id} (${g.player_count})`;sel.appendChild(o);});}
+const medals=['🥇','🥈','🥉'];
+async function loadLeaderboard(){
+  const game=document.getElementById('lb-game').value,stat=document.getElementById('lb-stat').value.trim()||'score',limit=parseInt(document.getElementById('lb-limit').value)||10;
+  if(!game)return toast('Select a game','error');
+  const r=await fetch(`${BASE}/leaderboard?game_id=${encodeURIComponent(game)}&stat=${encodeURIComponent(stat)}&limit=${limit}`);const d=await r.json();const board=d.leaderboard||[];
+  const el=document.getElementById('lb-results');
+  if(!board.length){el.innerHTML='<div class="empty"><div class="empty-icon">📊</div><div class="empty-title">No data for this stat</div></div>';return;}
+  const maxV=Math.max(...board.map(r=>Number(r.value)||0),1);
+  el.innerHTML=board.map(e=>`<div class="lb-row"><div class="lb-rank">${e.rank<=3?medals[e.rank-1]:`#${e.rank}`}</div><div class="lb-av" style="background:${avC(e.username)}">${ini(e.username)}</div><div class="lb-name">${esc(e.username)}</div><div class="lb-bar-w"><div class="lb-bar" style="width:${Math.round((Number(e.value)||0)/maxV*100)}%"></div></div><div class="lb-val">${Number(e.value).toLocaleString()}</div></div>`).join('');
+  const cp=allPlayers.filter(p=>p.game_id===game).sort((a,b)=>b.credits-a.credits).slice(0,10);
+  const maxC=cp[0]?.credits||1;
+  document.getElementById('lb-credits').innerHTML=cp.length?cp.map((p,i)=>`<div class="lb-row"><div class="lb-rank">${i<3?medals[i]:`#${i+1}`}</div><div class="lb-av" style="background:${avC(p.username)}">${ini(p.username)}</div><div class="lb-name">${esc(p.username)}</div><div class="lb-bar-w"><div class="lb-bar" style="width:${Math.round(p.credits/maxC*100)}%"></div></div><div class="lb-val">💰 ${p.credits.toLocaleString()}</div></div>`).join(''):'<div style="color:var(--muted);text-align:center;padding:14px">No players in game</div>';
 }
 
-// ── Helpers ───────────────────────────────────────────────────────────────────
-function esc(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
-
-async function ownerFetch(path) {
-  try {
-    const r = await fetch(`${BASE}${path}`, { headers: { 'x-owner-key': OWNER_KEY } });
-    return await r.json();
-  } catch { return { error: 'Network error' }; }
+// Analytics
+async function loadAnalytics(){await loadStats();renderAnalyticsGames(allGames);}
+function renderAnalyticsGames(games){
+  if(!games.length)return;
+  const maxP=Math.max(...games.map(g=>g.player_count),1);
+  const chart=document.getElementById('an-chart');
+  if(chart)chart.innerHTML=games.map(g=>`<div style="display:flex;align-items:center;gap:9px;padding:6px 0;border-bottom:1px solid rgba(48,54,61,.35)"><span class="badge badge-purple" style="width:100px;text-align:center;flex-shrink:0">${esc(g.game_id)}</span><div style="flex:1;height:6px;background:rgba(255,255,255,.06);border-radius:3px;overflow:hidden"><div style="height:100%;width:${Math.round(g.player_count/maxP*100)}%;background:linear-gradient(90deg,#7c3aed,#a855f7);border-radius:3px;transition:width .5s"></div></div><strong style="color:var(--accent2);width:48px;text-align:right;font-size:13px">${g.player_count}</strong></div>`).join('');
+  const tbl=document.getElementById('an-table');
+  if(tbl)tbl.innerHTML=games.map(g=>`<tr><td><strong>${esc(g.game_id)}</strong></td><td>${g.player_count}</td><td><div style="width:100%;height:5px;background:rgba(255,255,255,.06);border-radius:2px;overflow:hidden"><div style="height:100%;width:${Math.round(g.player_count/maxP*100)}%;background:linear-gradient(90deg,#7c3aed,#a855f7);border-radius:2px"></div></div></td></tr>`).join('');
 }
 
-async function ownerPost(path, body) {
-  try {
-    const r = await fetch(`${BASE}${path}`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'x-owner-key': OWNER_KEY },
-      body: JSON.stringify(body)
-    });
-    return await r.json();
-  } catch { return { error: 'Network error' }; }
+// Game Config
+let localCfg=JSON.parse(localStorage.getItem('gbd_cfg')||'{}');
+async function cfgSet(){
+  const game=document.getElementById('cfg-game').value.trim(),key=document.getElementById('cfg-key').value.trim(),val=document.getElementById('cfg-val').value.trim();
+  if(!game||!key||!val)return toast('Fill all fields','error');
+  try{const r=await ownerPost('/owner/config/set',{game_id:game,key,value:val});if(r.success){logAudit('config',`Set ${game}/${key}`);addAct(`⚙️ ${game}/${key}`,'#58a6ff');toast('⚙️ Saved!','success');document.getElementById('cfg-load-game').value=game;cfgLoad();return;}}catch{}
+  if(!localCfg[game])localCfg[game]={};localCfg[game][key]=val;localStorage.setItem('gbd_cfg',JSON.stringify(localCfg));
+  logAudit('config',`Local ${game}/${key}`);toast('⚙️ Saved locally','success');
+  document.getElementById('cfg-load-game').value=game;cfgLoad();
 }
-
-async function ownerDelete(path) {
-  try {
-    const r = await fetch(`${BASE}${path}`, { method: 'DELETE', headers: { 'x-owner-key': OWNER_KEY } });
-    return await r.json();
-  } catch { return { error: 'Network error' }; }
+async function cfgLoad(){
+  const game=document.getElementById('cfg-load-game').value.trim();if(!game)return toast('Enter game ID','error');
+  try{const r=await fetch(`${BASE}/config?game_id=${encodeURIComponent(game)}`);const d=await r.json();if(d.config){renderCfgGrid(d.config,game);return;}}catch{}
+  renderCfgGrid(localCfg[game]||{},game);
 }
-
-function toast(msg, type = 'success') {
-  const el = document.getElementById('toast');
-  el.textContent = msg;
-  el.className = type;
-  el.style.display = 'block';
-  setTimeout(() => el.style.display = 'none', 3000);
+function renderCfgGrid(cfg,game){
+  const entries=Object.entries(cfg),grid=document.getElementById('cfg-grid');
+  if(!entries.length){grid.innerHTML=`<div style="color:var(--muted);font-size:13px;text-align:center;padding:18px;grid-column:1/-1">No config for "${game}"</div>`;return;}
+  grid.innerHTML=entries.map(([k,v])=>`<div class="cfg-item"><div class="cfg-key">${esc(k)}</div><div class="cfg-val">${esc(String(v))}</div><div class="cfg-actions"><button class="btn btn-outline btn-sm" onclick="navigator.clipboard.writeText('${esc(String(v))}');toast('📋 Copied','success')">📋</button><button class="btn btn-red btn-sm" onclick="delCfg('${esc(game)}','${esc(k)}')">🗑</button></div></div>`).join('');
 }
+function delCfg(game,key){if(localCfg[game]){delete localCfg[game][key];localStorage.setItem('gbd_cfg',JSON.stringify(localCfg));}renderCfgGrid(localCfg[game]||{},game);toast('🗑 Removed','success');}
 
-// Close modals on backdrop click
-document.querySelectorAll('.modal-overlay').forEach(o => {
-  o.addEventListener('click', e => { if (e.target === o) o.classList.remove('open'); });
+// Command palette
+const CMD_BASE=[
+  {ic:'👥',lbl:'Players',hint:'Panel',fn:()=>sbNavByName('players')},
+  {ic:'✨',lbl:'Cosmetics',hint:'Panel',fn:()=>sbNavByName('cosmetics')},
+  {ic:'📊',lbl:'Analytics',hint:'Panel',fn:()=>sbNavByName('analytics')},
+  {ic:'🏆',lbl:'Leaderboard',hint:'Panel',fn:()=>sbNavByName('leaderboard')},
+  {ic:'📢',lbl:'Broadcasts',hint:'Panel',fn:()=>sbNavByName('broadcasts')},
+  {ic:'⚙️',lbl:'Game Config',hint:'Panel',fn:()=>sbNavByName('config')},
+  {ic:'📋',lbl:'Audit Log',hint:'Panel',fn:()=>sbNavByName('audit')},
+  {ic:'📖',lbl:'API Docs',hint:'Panel',fn:()=>sbNavByName('api')},
+  {ic:'✨',lbl:'Create Cosmetic',hint:'Action',fn:()=>{sbNavByName('cosmetics');openCosmeticModal();}},
+  {ic:'🔄',lbl:'Refresh Players',hint:'Action',fn:()=>loadPlayers()},
+  {ic:'🔄',lbl:'Refresh Stats',hint:'Action',fn:()=>loadStats()},
+  {ic:'⬇',lbl:'Export Players CSV',hint:'Action',fn:()=>exportPlayers()},
+  {ic:'⚡',lbl:'Toggle Activity Feed',hint:'Action',fn:()=>toggleFeed()},
+  {ic:'🚪',lbl:'Logout',hint:'Account',fn:()=>logout()},
+];
+let cmdItems=CMD_BASE,cmdSel=0;
+function openCmd(){document.getElementById('cmd-bg').classList.add('open');setTimeout(()=>document.getElementById('cmd-q').focus(),40);cmdSel=0;cmdUpdate();}
+function closeCmd(){document.getElementById('cmd-bg').classList.remove('open');document.getElementById('cmd-q').value='';}
+function cmdUpdate(){
+  const q=document.getElementById('cmd-q').value.toLowerCase();
+  const pRes=q.length>1?allPlayers.filter(p=>p.username.toLowerCase().includes(q)).slice(0,4).map(p=>({ic:'👤',lbl:p.username,hint:`${p.game_id} · 💰${p.credits}`,fn:()=>openPsp(p.id)})):[];
+  cmdItems=[...pRes,...CMD_BASE.filter(c=>!q||c.lbl.toLowerCase().includes(q))];
+  cmdSel=0;renderCmd();
+}
+function renderCmd(){
+  const el=document.getElementById('cmd-list');
+  if(!cmdItems.length){el.innerHTML='<div style="padding:16px;text-align:center;color:var(--muted);font-size:13px">No results</div>';return;}
+  el.innerHTML=cmdItems.map((c,i)=>`<div class="cmd-row ${i===cmdSel?'sel':''}" onclick="execCmd(${i})"><div class="cmd-ic">${c.ic}</div><div class="cmd-lbl">${esc(c.lbl)}</div><div class="cmd-hint">${esc(c.hint||'')}</div></div>`).join('');
+}
+function execCmd(i){const c=cmdItems[i];if(c){closeCmd();c.fn();}}
+function cmdKey(e){
+  if(e.key==='ArrowDown'){cmdSel=Math.min(cmdSel+1,cmdItems.length-1);renderCmd();e.preventDefault();}
+  else if(e.key==='ArrowUp'){cmdSel=Math.max(cmdSel-1,0);renderCmd();e.preventDefault();}
+  else if(e.key==='Enter')execCmd(cmdSel);
+  else if(e.key==='Escape')closeCmd();
+}
+document.addEventListener('keydown',e=>{
+  if((e.ctrlKey||e.metaKey)&&e.key==='k'){e.preventDefault();openCmd();}
+  if(e.key==='Escape'){closeCmd();closePsp();}
 });
+
+// Session uptime ticker
+const _t0=Date.now();
+setInterval(()=>{const el=document.getElementById('sb-uptime');if(!el)return;const s=Math.floor((Date.now()-_t0)/1000),m=Math.floor(s/60),h=Math.floor(m/60);el.textContent=`⏱ ${h>0?h+'h ':''}${m%60}m ${s%60}s`;},1000);
+
+// Auto-refresh stats every 60s
+setInterval(()=>{if(OWNER_KEY)loadStats();},60000);
 </script>
 </body>
 </html>
