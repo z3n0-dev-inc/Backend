@@ -95,7 +95,6 @@ function requireOwner(req, res, next) {
 
 // ── Auth Routes ──────────────────────────────────────────────────────────────
 
-// POST /register
 app.post('/register', (req, res) => {
   const { game_id, username, password } = req.body;
   if (!game_id || !username || !password)
@@ -114,7 +113,6 @@ app.post('/register', (req, res) => {
   }
 });
 
-// POST /login
 app.post('/login', (req, res) => {
   const { game_id, username, password } = req.body;
   if (!game_id || !username || !password)
@@ -130,7 +128,6 @@ app.post('/login', (req, res) => {
   res.json({ success: true, player_id: player.id, token, username: player.username, credits: player.credits });
 });
 
-// GET /me
 app.get('/me', requireAuth, (req, res) => {
   const { id, game_id, username, credits, created_at } = req.player;
   res.json({ player_id: id, game_id, username, credits, created_at });
@@ -138,7 +135,6 @@ app.get('/me', requireAuth, (req, res) => {
 
 // ── Save Data Routes ─────────────────────────────────────────────────────────
 
-// POST /save  — save any key/value JSON data
 app.post('/save', requireAuth, (req, res) => {
   const { data } = req.body;
   if (!data || typeof data !== 'object')
@@ -154,7 +150,6 @@ app.post('/save', requireAuth, (req, res) => {
   res.json({ success: true });
 });
 
-// GET /load  — load all saved data
 app.get('/load', requireAuth, (req, res) => {
   const rows = db.prepare('SELECT key, value FROM player_data WHERE player_id = ?').all(req.player.id);
   const data = {};
@@ -164,7 +159,6 @@ app.get('/load', requireAuth, (req, res) => {
   res.json({ success: true, data });
 });
 
-// DELETE /save/:key  — delete a specific save key
 app.delete('/save/:key', requireAuth, (req, res) => {
   db.prepare('DELETE FROM player_data WHERE player_id = ? AND key = ?').run(req.player.id, req.params.key);
   res.json({ success: true });
@@ -172,12 +166,10 @@ app.delete('/save/:key', requireAuth, (req, res) => {
 
 // ── Credits Routes ───────────────────────────────────────────────────────────
 
-// GET /credits
 app.get('/credits', requireAuth, (req, res) => {
   res.json({ success: true, credits: req.player.credits });
 });
 
-// POST /credits/spend
 app.post('/credits/spend', requireAuth, (req, res) => {
   const { amount } = req.body;
   if (!amount || amount <= 0) return res.status(400).json({ error: 'Invalid amount' });
@@ -187,7 +179,6 @@ app.post('/credits/spend', requireAuth, (req, res) => {
   res.json({ success: true, credits: updated.credits });
 });
 
-// POST /credits/add  (owner only in production — or you can use it from game for rewards)
 app.post('/credits/add', requireAuth, (req, res) => {
   const { amount } = req.body;
   if (!amount || amount <= 0) return res.status(400).json({ error: 'Invalid amount' });
@@ -198,13 +189,11 @@ app.post('/credits/add', requireAuth, (req, res) => {
 
 // ── Inventory Routes ─────────────────────────────────────────────────────────
 
-// GET /inventory
 app.get('/inventory', requireAuth, (req, res) => {
   const items = db.prepare('SELECT item_name, quantity, metadata FROM inventory WHERE player_id = ?').all(req.player.id);
   res.json({ success: true, inventory: items });
 });
 
-// POST /inventory/add
 app.post('/inventory/add', requireAuth, (req, res) => {
   const { item_name, quantity = 1, metadata } = req.body;
   if (!item_name) return res.status(400).json({ error: 'item_name required' });
@@ -216,7 +205,6 @@ app.post('/inventory/add', requireAuth, (req, res) => {
   res.json({ success: true });
 });
 
-// POST /inventory/remove
 app.post('/inventory/remove', requireAuth, (req, res) => {
   const { item_name, quantity = 1 } = req.body;
   if (!item_name) return res.status(400).json({ error: 'item_name required' });
@@ -232,7 +220,6 @@ app.post('/inventory/remove', requireAuth, (req, res) => {
 
 // ── Cosmetics Routes ─────────────────────────────────────────────────────────
 
-// GET /cosmetics/catalog  — get all cosmetics for a game
 app.get('/cosmetics/catalog', (req, res) => {
   const { game_id } = req.query;
   if (!game_id) return res.status(400).json({ error: 'game_id query param required' });
@@ -240,7 +227,6 @@ app.get('/cosmetics/catalog', (req, res) => {
   res.json({ success: true, cosmetics: items });
 });
 
-// GET /cosmetics/owned  — get cosmetics the player owns
 app.get('/cosmetics/owned', requireAuth, (req, res) => {
   const rows = db.prepare(`
     SELECT c.*, pc.equipped, pc.obtained_at
@@ -251,7 +237,6 @@ app.get('/cosmetics/owned', requireAuth, (req, res) => {
   res.json({ success: true, cosmetics: rows });
 });
 
-// POST /cosmetics/buy  — buy a cosmetic with credits
 app.post('/cosmetics/buy', requireAuth, (req, res) => {
   const { cosmetic_id } = req.body;
   if (!cosmetic_id) return res.status(400).json({ error: 'cosmetic_id required' });
@@ -272,7 +257,6 @@ app.post('/cosmetics/buy', requireAuth, (req, res) => {
   res.json({ success: true, credits: updated.credits });
 });
 
-// POST /cosmetics/equip
 app.post('/cosmetics/equip', requireAuth, (req, res) => {
   const { cosmetic_id, equipped } = req.body;
   if (!cosmetic_id) return res.status(400).json({ error: 'cosmetic_id required' });
@@ -284,7 +268,6 @@ app.post('/cosmetics/equip', requireAuth, (req, res) => {
 
 // ── Broadcast Routes ─────────────────────────────────────────────────────────
 
-// GET /broadcasts  — get active messages for a game
 app.get('/broadcasts', (req, res) => {
   const { game_id } = req.query;
   const msgs = db.prepare('SELECT * FROM broadcast_messages WHERE game_id = ? OR game_id IS NULL ORDER BY created_at DESC LIMIT 10').all(game_id || null);
@@ -293,7 +276,6 @@ app.get('/broadcasts', (req, res) => {
 
 // ── Leaderboard ──────────────────────────────────────────────────────────────
 
-// GET /leaderboard?game_id=xxx&stat=score&limit=10
 app.get('/leaderboard', (req, res) => {
   const { game_id, stat = 'score', limit = 10 } = req.query;
   if (!game_id) return res.status(400).json({ error: 'game_id required' });
@@ -319,7 +301,6 @@ app.get('/leaderboard', (req, res) => {
 
 // ── Owner Routes ─────────────────────────────────────────────────────────────
 
-// POST /owner/verify
 app.post('/owner/verify', (req, res) => {
   const { password } = req.body;
   if (password === OWNER_PASSWORD) {
@@ -329,7 +310,6 @@ app.post('/owner/verify', (req, res) => {
   }
 });
 
-// GET /owner/players
 app.get('/owner/players', requireOwner, (req, res) => {
   const { game_id } = req.query;
   let rows;
@@ -341,13 +321,11 @@ app.get('/owner/players', requireOwner, (req, res) => {
   res.json({ success: true, players: rows });
 });
 
-// GET /owner/games  — list all unique game IDs
 app.get('/owner/games', requireOwner, (req, res) => {
   const rows = db.prepare('SELECT game_id, COUNT(*) as player_count FROM players GROUP BY game_id').all();
   res.json({ success: true, games: rows });
 });
 
-// POST /owner/credits/give
 app.post('/owner/credits/give', requireOwner, (req, res) => {
   const { player_id, amount } = req.body;
   if (!player_id || !amount) return res.status(400).json({ error: 'player_id and amount required' });
@@ -357,7 +335,6 @@ app.post('/owner/credits/give', requireOwner, (req, res) => {
   res.json({ success: true, new_credits: p.credits });
 });
 
-// POST /owner/credits/set
 app.post('/owner/credits/set', requireOwner, (req, res) => {
   const { player_id, amount } = req.body;
   if (!player_id || amount === undefined) return res.status(400).json({ error: 'player_id and amount required' });
@@ -366,7 +343,6 @@ app.post('/owner/credits/set', requireOwner, (req, res) => {
   res.json({ success: true, credits: amount });
 });
 
-// POST /owner/ban
 app.post('/owner/ban', requireOwner, (req, res) => {
   const { player_id, banned = 1 } = req.body;
   if (!player_id) return res.status(400).json({ error: 'player_id required' });
@@ -374,7 +350,6 @@ app.post('/owner/ban', requireOwner, (req, res) => {
   res.json({ success: true, banned: !!banned });
 });
 
-// DELETE /owner/player/:id
 app.delete('/owner/player/:id', requireOwner, (req, res) => {
   const id = req.params.id;
   db.prepare('DELETE FROM player_data WHERE player_id = ?').run(id);
@@ -384,7 +359,6 @@ app.delete('/owner/player/:id', requireOwner, (req, res) => {
   res.json({ success: true });
 });
 
-// POST /owner/cosmetics/create
 app.post('/owner/cosmetics/create', requireOwner, (req, res) => {
   const { game_id, name, type, description, price = 0, rarity = 'common' } = req.body;
   if (!game_id || !name || !type) return res.status(400).json({ error: 'game_id, name, and type required' });
@@ -394,14 +368,12 @@ app.post('/owner/cosmetics/create', requireOwner, (req, res) => {
   res.json({ success: true, cosmetic_id: id });
 });
 
-// DELETE /owner/cosmetics/:id
 app.delete('/owner/cosmetics/:id', requireOwner, (req, res) => {
   db.prepare('DELETE FROM player_cosmetics WHERE cosmetic_id = ?').run(req.params.id);
   db.prepare('DELETE FROM cosmetics_catalog WHERE id = ?').run(req.params.id);
   res.json({ success: true });
 });
 
-// POST /owner/cosmetics/grant  — give cosmetic to player for free
 app.post('/owner/cosmetics/grant', requireOwner, (req, res) => {
   const { player_id, cosmetic_id } = req.body;
   if (!player_id || !cosmetic_id) return res.status(400).json({ error: 'player_id and cosmetic_id required' });
@@ -413,7 +385,6 @@ app.post('/owner/cosmetics/grant', requireOwner, (req, res) => {
   }
 });
 
-// POST /owner/inventory/give
 app.post('/owner/inventory/give', requireOwner, (req, res) => {
   const { player_id, item_name, quantity = 1 } = req.body;
   if (!player_id || !item_name) return res.status(400).json({ error: 'player_id and item_name required' });
@@ -425,7 +396,6 @@ app.post('/owner/inventory/give', requireOwner, (req, res) => {
   res.json({ success: true });
 });
 
-// POST /owner/broadcast
 app.post('/owner/broadcast', requireOwner, (req, res) => {
   const { message, game_id } = req.body;
   if (!message) return res.status(400).json({ error: 'message required' });
@@ -434,13 +404,11 @@ app.post('/owner/broadcast', requireOwner, (req, res) => {
   res.json({ success: true, broadcast_id: id });
 });
 
-// DELETE /owner/broadcast/:id
 app.delete('/owner/broadcast/:id', requireOwner, (req, res) => {
   db.prepare('DELETE FROM broadcast_messages WHERE id = ?').run(req.params.id);
   res.json({ success: true });
 });
 
-// GET /owner/stats
 app.get('/owner/stats', requireOwner, (req, res) => {
   const total_players = db.prepare('SELECT COUNT(*) as c FROM players').get().c;
   const total_games = db.prepare('SELECT COUNT(DISTINCT game_id) as c FROM players').get().c;
@@ -450,9 +418,282 @@ app.get('/owner/stats', requireOwner, (req, res) => {
   res.json({ success: true, stats: { total_players, total_games, total_credits, banned_players, total_cosmetics } });
 });
 
-// ── Serve Dashboard ───────────────────────────────────────────────────────────
 app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'index.html'));
+});
+
+// ════════════════════════════════════════════════════════════════════════════
+// NEW ADDITIONS — everything below is new; nothing above was changed
+// ════════════════════════════════════════════════════════════════════════════
+
+// ── Ensure new tables exist ───────────────────────────────────────────────────
+db.exec(`
+  CREATE TABLE IF NOT EXISTS game_config (
+    game_id TEXT NOT NULL,
+    key TEXT NOT NULL,
+    value TEXT NOT NULL,
+    updated_at TEXT DEFAULT (datetime('now')),
+    PRIMARY KEY (game_id, key)
+  );
+
+  CREATE TABLE IF NOT EXISTS player_notes (
+    id TEXT PRIMARY KEY,
+    player_id TEXT NOT NULL,
+    note TEXT NOT NULL,
+    created_by TEXT DEFAULT 'owner',
+    created_at TEXT DEFAULT (datetime('now'))
+  );
+
+  CREATE TABLE IF NOT EXISTS friend_relationships (
+    player_id TEXT NOT NULL,
+    friend_id TEXT NOT NULL,
+    status TEXT DEFAULT 'pending',
+    created_at TEXT DEFAULT (datetime('now')),
+    PRIMARY KEY (player_id, friend_id)
+  );
+`);
+
+// ── Game Config routes ────────────────────────────────────────────────────────
+
+// GET /config?game_id=xxx  — public: get all config for a game
+app.get('/config', (req, res) => {
+  const { game_id } = req.query;
+  if (!game_id) return res.status(400).json({ error: 'game_id required' });
+  const rows = db.prepare('SELECT key, value FROM game_config WHERE game_id = ?').all(game_id);
+  const config = {};
+  for (const r of rows) {
+    try { config[r.key] = JSON.parse(r.value); } catch { config[r.key] = r.value; }
+  }
+  res.json({ success: true, config });
+});
+
+// GET /config/:key?game_id=xxx  — public: get a single config value
+app.get('/config/:key', (req, res) => {
+  const { game_id } = req.query;
+  if (!game_id) return res.status(400).json({ error: 'game_id required' });
+  const row = db.prepare('SELECT value FROM game_config WHERE game_id = ? AND key = ?').get(game_id, req.params.key);
+  if (!row) return res.status(404).json({ error: 'Key not found' });
+  let value;
+  try { value = JSON.parse(row.value); } catch { value = row.value; }
+  res.json({ success: true, key: req.params.key, value });
+});
+
+// POST /owner/config/set  — owner: set a config key
+app.post('/owner/config/set', requireOwner, (req, res) => {
+  const { game_id, key, value } = req.body;
+  if (!game_id || !key || value === undefined)
+    return res.status(400).json({ error: 'game_id, key, and value required' });
+  const serialized = typeof value === 'string' ? value : JSON.stringify(value);
+  db.prepare(`
+    INSERT INTO game_config (game_id, key, value, updated_at)
+    VALUES (?,?,?,datetime('now'))
+    ON CONFLICT(game_id, key) DO UPDATE SET value = excluded.value, updated_at = excluded.updated_at
+  `).run(game_id, key, serialized);
+  res.json({ success: true });
+});
+
+// DELETE /owner/config/:game_id/:key  — owner: delete a config key
+app.delete('/owner/config/:game_id/:key', requireOwner, (req, res) => {
+  db.prepare('DELETE FROM game_config WHERE game_id = ? AND key = ?').run(req.params.game_id, req.params.key);
+  res.json({ success: true });
+});
+
+// GET /owner/config/:game_id  — owner: list all config for a game
+app.get('/owner/config/:game_id', requireOwner, (req, res) => {
+  const rows = db.prepare('SELECT key, value, updated_at FROM game_config WHERE game_id = ?').all(req.params.game_id);
+  const config = {};
+  for (const r of rows) {
+    try { config[r.key] = JSON.parse(r.value); } catch { config[r.key] = r.value; }
+  }
+  res.json({ success: true, config });
+});
+
+// ── Player Notes routes (owner only) ─────────────────────────────────────────
+
+// GET /owner/notes/:player_id  — get all notes for a player
+app.get('/owner/notes/:player_id', requireOwner, (req, res) => {
+  const notes = db.prepare('SELECT * FROM player_notes WHERE player_id = ? ORDER BY created_at DESC').all(req.params.player_id);
+  res.json({ success: true, notes });
+});
+
+// POST /owner/notes  — add a note to a player
+app.post('/owner/notes', requireOwner, (req, res) => {
+  const { player_id, note } = req.body;
+  if (!player_id || !note) return res.status(400).json({ error: 'player_id and note required' });
+  const id = uuidv4();
+  db.prepare('INSERT INTO player_notes (id, player_id, note) VALUES (?,?,?)').run(id, player_id, note);
+  res.json({ success: true, note_id: id });
+});
+
+// DELETE /owner/notes/:note_id  — delete a note
+app.delete('/owner/notes/:note_id', requireOwner, (req, res) => {
+  db.prepare('DELETE FROM player_notes WHERE id = ?').run(req.params.note_id);
+  res.json({ success: true });
+});
+
+// ── Enhanced Owner Stats ──────────────────────────────────────────────────────
+
+// GET /owner/stats/game/:game_id  — per-game detailed stats
+app.get('/owner/stats/game/:game_id', requireOwner, (req, res) => {
+  const gid = req.params.game_id;
+  const total = db.prepare('SELECT COUNT(*) as c FROM players WHERE game_id = ?').get(gid).c;
+  const banned = db.prepare('SELECT COUNT(*) as c FROM players WHERE game_id = ? AND banned = 1').get(gid).c;
+  const total_credits = db.prepare('SELECT SUM(credits) as c FROM players WHERE game_id = ?').get(gid).c || 0;
+  const avg_credits = total > 0 ? Math.round(total_credits / total) : 0;
+  const top_player = db.prepare('SELECT username, credits FROM players WHERE game_id = ? ORDER BY credits DESC LIMIT 1').get(gid);
+  const newest = db.prepare('SELECT username, created_at FROM players WHERE game_id = ? ORDER BY created_at DESC LIMIT 1').get(gid);
+  const cosmetic_count = db.prepare('SELECT COUNT(*) as c FROM cosmetics_catalog WHERE game_id = ?').get(gid).c;
+  res.json({
+    success: true,
+    game_id: gid,
+    stats: { total, banned, total_credits, avg_credits, top_player, newest, cosmetic_count }
+  });
+});
+
+// ── Bulk Owner Operations ─────────────────────────────────────────────────────
+
+// POST /owner/bulk/ban  — ban or unban multiple players
+app.post('/owner/bulk/ban', requireOwner, (req, res) => {
+  const { player_ids, banned = true } = req.body;
+  if (!Array.isArray(player_ids) || !player_ids.length)
+    return res.status(400).json({ error: 'player_ids array required' });
+  const stmt = db.prepare('UPDATE players SET banned = ? WHERE id = ?');
+  const tx = db.transaction((ids) => { for (const id of ids) stmt.run(banned ? 1 : 0, id); });
+  tx(player_ids);
+  res.json({ success: true, updated: player_ids.length });
+});
+
+// POST /owner/bulk/credits  — give credits to multiple players
+app.post('/owner/bulk/credits', requireOwner, (req, res) => {
+  const { player_ids, amount } = req.body;
+  if (!Array.isArray(player_ids) || !player_ids.length || !amount)
+    return res.status(400).json({ error: 'player_ids array and amount required' });
+  const stmt = db.prepare('UPDATE players SET credits = credits + ? WHERE id = ?');
+  const tx = db.transaction((ids) => { for (const id of ids) stmt.run(amount, id); });
+  tx(player_ids);
+  res.json({ success: true, updated: player_ids.length });
+});
+
+// POST /owner/bulk/delete  — delete multiple players
+app.post('/owner/bulk/delete', requireOwner, (req, res) => {
+  const { player_ids } = req.body;
+  if (!Array.isArray(player_ids) || !player_ids.length)
+    return res.status(400).json({ error: 'player_ids array required' });
+  const tx = db.transaction((ids) => {
+    for (const id of ids) {
+      db.prepare('DELETE FROM player_data WHERE player_id = ?').run(id);
+      db.prepare('DELETE FROM player_cosmetics WHERE player_id = ?').run(id);
+      db.prepare('DELETE FROM inventory WHERE player_id = ?').run(id);
+      db.prepare('DELETE FROM players WHERE id = ?').run(id);
+    }
+  });
+  tx(player_ids);
+  res.json({ success: true, deleted: player_ids.length });
+});
+
+// ── Credits Leaderboard ───────────────────────────────────────────────────────
+
+// GET /leaderboard/credits?game_id=xxx&limit=10
+app.get('/leaderboard/credits', (req, res) => {
+  const { game_id, limit = 10 } = req.query;
+  if (!game_id) return res.status(400).json({ error: 'game_id required' });
+  const rows = db.prepare('SELECT id as player_id, username, credits FROM players WHERE game_id = ? AND banned = 0 ORDER BY credits DESC LIMIT ?').all(game_id, parseInt(limit));
+  const board = rows.map((r, i) => ({ rank: i + 1, ...r }));
+  res.json({ success: true, leaderboard: board });
+});
+
+// ── Password Reset Tokens ─────────────────────────────────────────────────────
+
+// POST /owner/reset-password  — owner resets a player's password
+app.post('/owner/reset-password', requireOwner, (req, res) => {
+  const { player_id, new_password } = req.body;
+  if (!player_id || !new_password)
+    return res.status(400).json({ error: 'player_id and new_password required' });
+  const player = db.prepare('SELECT id FROM players WHERE id = ?').get(player_id);
+  if (!player) return res.status(404).json({ error: 'Player not found' });
+  const hash = bcrypt.hashSync(new_password, 10);
+  const token = uuidv4(); // also invalidate old token
+  db.prepare('UPDATE players SET password_hash = ?, token = ? WHERE id = ?').run(hash, token, player_id);
+  res.json({ success: true });
+});
+
+// ── Player Search ─────────────────────────────────────────────────────────────
+
+// GET /owner/search?q=name&game_id=xxx
+app.get('/owner/search', requireOwner, (req, res) => {
+  const { q, game_id } = req.query;
+  if (!q) return res.status(400).json({ error: 'q query param required' });
+  const like = `%${q}%`;
+  let rows;
+  if (game_id) {
+    rows = db.prepare('SELECT id, game_id, username, credits, banned, created_at FROM players WHERE game_id = ? AND username LIKE ? LIMIT 20').all(game_id, like);
+  } else {
+    rows = db.prepare('SELECT id, game_id, username, credits, banned, created_at FROM players WHERE username LIKE ? LIMIT 20').all(like);
+  }
+  res.json({ success: true, players: rows });
+});
+
+// ── Player Inventory (owner view) ────────────────────────────────────────────
+
+// GET /owner/inventory/:player_id
+app.get('/owner/inventory/:player_id', requireOwner, (req, res) => {
+  const items = db.prepare('SELECT item_name, quantity, metadata FROM inventory WHERE player_id = ?').all(req.params.player_id);
+  res.json({ success: true, inventory: items });
+});
+
+// GET /owner/save/:player_id  — view a player's save data
+app.get('/owner/save/:player_id', requireOwner, (req, res) => {
+  const rows = db.prepare('SELECT key, value FROM player_data WHERE player_id = ?').all(req.params.player_id);
+  const data = {};
+  for (const row of rows) {
+    try { data[row.key] = JSON.parse(row.value); } catch { data[row.key] = row.value; }
+  }
+  res.json({ success: true, data });
+});
+
+// ── Friends / Social ──────────────────────────────────────────────────────────
+
+// POST /friends/request  — send a friend request
+app.post('/friends/request', requireAuth, (req, res) => {
+  const { friend_username } = req.body;
+  if (!friend_username) return res.status(400).json({ error: 'friend_username required' });
+  const friend = db.prepare('SELECT id FROM players WHERE game_id = ? AND username = ?').get(req.player.game_id, friend_username);
+  if (!friend) return res.status(404).json({ error: 'Player not found in this game' });
+  if (friend.id === req.player.id) return res.status(400).json({ error: 'Cannot add yourself' });
+  try {
+    db.prepare('INSERT OR IGNORE INTO friend_relationships (player_id, friend_id, status) VALUES (?,?,?)').run(req.player.id, friend.id, 'pending');
+    res.json({ success: true });
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
+// POST /friends/accept  — accept a friend request
+app.post('/friends/accept', requireAuth, (req, res) => {
+  const { friend_id } = req.body;
+  if (!friend_id) return res.status(400).json({ error: 'friend_id required' });
+  db.prepare("UPDATE friend_relationships SET status = 'accepted' WHERE player_id = ? AND friend_id = ?").run(friend_id, req.player.id);
+  db.prepare("INSERT OR IGNORE INTO friend_relationships (player_id, friend_id, status) VALUES (?,?,'accepted')").run(req.player.id, friend_id);
+  res.json({ success: true });
+});
+
+// GET /friends  — get accepted friends list
+app.get('/friends', requireAuth, (req, res) => {
+  const rows = db.prepare(`
+    SELECT p.id, p.username, p.credits
+    FROM friend_relationships fr
+    JOIN players p ON p.id = fr.friend_id
+    WHERE fr.player_id = ? AND fr.status = 'accepted'
+  `).all(req.player.id);
+  res.json({ success: true, friends: rows });
+});
+
+// ── Health & Info ─────────────────────────────────────────────────────────────
+
+app.get('/health', (req, res) => {
+  const total = db.prepare('SELECT COUNT(*) as c FROM players').get().c;
+  const games = db.prepare('SELECT COUNT(DISTINCT game_id) as c FROM players').get().c;
+  res.json({ status: 'ok', players: total, games, uptime: process.uptime() });
 });
 
 app.listen(PORT, () => {
